@@ -460,3 +460,23 @@ print(f"Churn probability: {proba:.1%} | flagged as at risk: {proba >= threshold
 
 **Muhammad Zain Nasir**
 [GitHub](https://github.com/mzainnasir010) | [LinkedIn](https://www.linkedin.com/in/muhammadin-zain-nasir/) | [Portfolio](https://muhammad-zain-nasir.vercel.app/)
+
+## Prediction API (FastAPI)
+
+```bash
+cd server
+python -m venv venv && venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+Interactive docs: `http://127.0.0.1:8000/docs`
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Service and model status |
+| GET | `/model/info` | Model, threshold, risk tiers, test metrics |
+| GET | `/model/options` | Allowed values for each input field |
+| POST | `/predict` | Churn probability, risk tier, and top 5 drivers for one customer |
+| POST | `/predict/batch` | Score up to 500 customers |
+
+Clients send raw customer fields only; the server rebuilds the engineered features (`num_addons`, `has_security_support`, `auto_pay`, `tenure_group`) so predictions match training. Risk tiers: Low (below 0.17), Medium (0.17 to 0.50), High (0.50 and above).
