@@ -104,22 +104,16 @@ This project translates historical customer records into forward-looking risk sc
 
 ```
 churn-prediction/
-├── data/
-│   ├── raw/            # original CSV (not tracked; download from Kaggle)
-│   └── processed/      # telco_clean.csv, telco_features.csv
-├── notebooks/
-│   ├── 01_data_understanding.ipynb
-│   ├── 02_data_cleaning.ipynb
-│   ├── 03_eda.ipynb
-│   ├── 04_feature_engineering.ipynb
-│   └── 05_modelling.ipynb      # split, models, tuning, evaluation, SHAP
-├── src/                # reusable code
-├── models/
-│   └── churn_model.joblib      # pipeline + XGBoost + tuned threshold
-├── reports/            # figures and result tables
-├── app/                # prediction interface / API
+├── notebook/
+│   ├── data/            # raw (not tracked) and processed
+│   ├── notebooks/       # 01 to 05: cleaning, EDA, features, modelling, SHAP
+│   ├── models/          # churn_model.joblib
+│   └── reports/         # figures and result tables
+├── server/              # FastAPI prediction API
+├── client/              # Vue frontend
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── .gitignore
 ```
 
 ## Methodology
