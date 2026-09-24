@@ -20,3 +20,12 @@ jupyter notebook
 - `Churn` encoded as 1 (Yes) / 0 (No).
 - `customerID` dropped (identifier, no predictive value). No duplicate rows found.
 - No leakage columns identified: every feature would be known before a customer churns.
+
+## EDA (Exploratory Data Analysis) Findings
+- Overall churn rate: 26.5% (imbalanced target).
+- Contract type: month-to-month churn is __% vs __% (one-year) and __% (two-year).
+- Internet service: fiber optic churn is __% vs __% (DSL).
+- Tenure: customers in their first 12 months churn at __%, versus __% after 48 months.
+- Payment method: electronic check churn is __%, the highest of the four methods.
+- Little to no effect observed for: __.
+Figures are in `reports/`.
