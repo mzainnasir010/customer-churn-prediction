@@ -108,3 +108,25 @@ Class imbalance handled via class weights (`class_weight="balanced"`, sample wei
 - Trade-off: lowering the threshold raises recall from 51% to 89% at the cost of accuracy and precision. Retention offers should therefore be cheap to send.
 - Test ROC-AUC (0.848) matches cross-validation (0.850), so there is no sign of overfitting or leakage.
 - Saved model: `models/churn_model.joblib` (preprocessing pipeline, XGBoost, and the tuned threshold).
+
+## Explainability
+SHAP (`TreeExplainer`) on the final XGBoost model, computed on the test set. Figures in `reports/`.
+
+Top churn drivers (mean absolute SHAP value):
+
+| Rank | Feature | Mean \|SHAP\| | Effect |
+|---|---|---|---|
+| 1 | Contract: month-to-month | 0.619 | raises churn |
+| 2 | Tenure | 0.317 | lowers churn |
+| 3 | Internet service: fiber optic | 0.251 | raises churn |
+| 4 | Payment method: electronic check | 0.191 | raises churn |
+| 5 | Monthly charges | 0.173 | raises churn |
+| 6 | Contract: two year | 0.159 | lowers churn |
+| 7 | Internet service: none | 0.146 | lowers churn |
+| 8 | Paperless billing | 0.125 | raises churn |
+| 9 | Has security or tech support | 0.107 | lowers churn |
+| 10 | Total charges | 0.098 | lowers churn |
+
+- Contract type is by far the strongest driver, about twice as influential as tenure. This agrees with the EDA (month-to-month ~43% churn vs ~3% for two-year contracts).
+- Per-customer explanations: the waterfall plot shows which features pushed one customer's risk up or down (the highest-risk test customer has a churn probability of 0.869).
+- Limitations: SHAP shows association, not causation, so recommendations are hypotheses to test. `tenure`, `tenure_group`, and `TotalCharges` are correlated, so their importance is shared between them. The two contract and two internet-service rows above are different levels of the same variable.
