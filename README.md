@@ -34,3 +34,11 @@ jupyter notebook
 - Gender and PhoneService have little to no effect.
 - `tenure` and `TotalCharges` are highly correlated (0.83).
 Figures are in `reports/`.
+
+## Feature Engineering
+Derived from EDA findings (row-wise only, no leakage):
+- `num_addons`: count of add-on services subscribed.
+- `has_security_support`: has OnlineSecurity or TechSupport.
+- `auto_pay`: pays by automatic bank transfer or credit card.
+- `tenure_group`: tenure bands (0-12, 13-24, 25-48, 49-72 months).
+Encoding and scaling are fitted on the training set only, inside a scikit-learn pipeline.
