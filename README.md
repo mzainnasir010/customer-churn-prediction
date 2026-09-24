@@ -42,3 +42,8 @@ Derived from EDA findings (row-wise only, no leakage):
 - `auto_pay`: pays by automatic bank transfer or credit card.
 - `tenure_group`: tenure bands (0-12, 13-24, 25-48, 49-72 months).
 Encoding and scaling are fitted on the training set only, inside a scikit-learn pipeline.
+
+## Train/Test Split and Preprocessing
+- 80/20 stratified split on `Churn` (random_state=42): 5,634 train / 1,409 test rows, churn rate 26.5% in both.
+- Split performed before any fitting to avoid leakage.
+- Preprocessing (scikit-learn `ColumnTransformer`): standard scaling for numeric features, one-hot encoding for categorical features. It is fitted on the training set only, inside each model's pipeline.
