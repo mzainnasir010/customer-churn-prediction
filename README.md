@@ -23,9 +23,14 @@ jupyter notebook
 
 ## EDA (Exploratory Data Analysis) Findings
 - Overall churn rate: 26.5% (imbalanced target).
-- Contract type: month-to-month churn is __% vs __% (one-year) and __% (two-year).
-- Internet service: fiber optic churn is __% vs __% (DSL).
-- Tenure: customers in their first 12 months churn at __%, versus __% after 48 months.
-- Payment method: electronic check churn is __%, the highest of the four methods.
-- Little to no effect observed for: __.
+- Contract: month-to-month churn ~43% vs ~11% (one-year) and ~3% (two-year).
+- Internet service: fiber optic ~42% vs ~19% (DSL) and ~7% (no internet).
+- Tenure: 47.4% churn in months 0-12, dropping to 9.5% after 48 months.
+- Payment method: electronic check ~45%, versus 15-19% for the other methods.
+- Seniors churn at 41.7% vs 23.6% for non-seniors.
+- Riskiest segment: month-to-month fiber optic customers (54.6%).
+- Customers with OnlineSecurity, TechSupport, a partner, or dependents churn less.
+- Paperless billing customers churn more (~34% vs ~16%).
+- Gender and PhoneService have little to no effect.
+- `tenure` and `TotalCharges` are highly correlated (0.83).
 Figures are in `reports/`.
