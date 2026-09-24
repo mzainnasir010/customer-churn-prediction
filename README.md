@@ -124,8 +124,6 @@ churn-prediction/
 
 ## Methodology
 
-**`churn-prediction/README.md`** (replace the existing Methodology diagram)
-
 ```mermaid
 flowchart TB
     subgraph P1["Phase 1: Data foundation"]
