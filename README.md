@@ -14,3 +14,9 @@ venv\Scripts\activate
 pip install -r requirements.txt
 jupyter notebook
 ```
+## Data Cleaning
+- `TotalCharges` was stored as text. 11 blank values belonged to customers with `tenure = 0` (not yet billed), so they were set to 0.
+- "No internet service" / "No phone service" were collapsed to "No", since `InternetService` and `PhoneService` already capture this.
+- `Churn` encoded as 1 (Yes) / 0 (No).
+- `customerID` dropped (identifier, no predictive value). No duplicate rows found.
+- No leakage columns identified: every feature would be known before a customer churns.
