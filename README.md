@@ -47,3 +47,25 @@ Encoding and scaling are fitted on the training set only, inside a scikit-learn 
 - 80/20 stratified split on `Churn` (random_state=42): 5,634 train / 1,409 test rows, churn rate 26.5% in both.
 - Split performed before any fitting to avoid leakage.
 - Preprocessing (scikit-learn `ColumnTransformer`): standard scaling for numeric features, one-hot encoding for categorical features. It is fitted on the training set only, inside each model's pipeline.
+
+## Model Development
+Five classifiers trained on identical preprocessing, split, and random seed (42):
+Logistic Regression (baseline), Decision Tree, Random Forest, Gradient Boosting, XGBoost.
+Class imbalance handled via class weights (`class_weight="balanced"`, sample weights for Gradient Boosting, `scale_pos_weight` for XGBoost).
+
+## Model Comparison
+5-fold stratified cross-validation on the training set (same folds, preprocessing, and seed for every model). Class imbalance handled with class weights.
+
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|---|---|---|---|---|---|
+| Gradient Boosting | 0.750 | 0.519 | 0.793 | 0.627 | 0.847 |
+| Logistic Regression | 0.748 | 0.517 | 0.795 | 0.626 | 0.846 |
+| Random Forest | 0.780 | 0.565 | 0.734 | 0.639 | 0.846 |
+| XGBoost | 0.759 | 0.532 | 0.783 | 0.633 | 0.843 |
+| Decision Tree (depth-limited) | 0.735 | 0.500 | 0.788 | 0.612 | 0.828 |
+
+**Findings**
+- Gradient Boosting, Logistic Regression, Random Forest, and XGBoost are effectively tied on ROC-AUC (0.843-0.847). The simple Logistic Regression baseline is not beaten by the more complex models.
+- Effect of class weighting (Logistic Regression): recall rose from 0.538 to 0.795 and precision fell from 0.665 to 0.517. Accuracy dropped from 0.805 to 0.748 and ROC-AUC was unchanged (0.846). Weighting catches more churners at the cost of more false alarms.
+- Effect of removing the Decision Tree depth limit: train recall 0.999 vs CV recall 0.492, and ROC-AUC fell from 0.828 to 0.658. This is severe overfitting, so a depth limit is required.
+- Random Forest has the highest precision (0.565) and F1 (0.639) but the lowest recall of the top four (0.734).
