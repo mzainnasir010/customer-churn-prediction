@@ -124,18 +124,77 @@ churn-prediction/
 
 ## Methodology
 
+**`churn-prediction/README.md`** (replace the existing Methodology diagram)
+
 ```mermaid
-flowchart LR
-    A[Raw data] --> B[Cleaning]
-    B --> C[EDA]
-    C --> D[Feature engineering]
-    D --> E[Stratified split]
-    E --> F[5 models, 5-fold CV]
-    F --> G[Tuning and selection]
-    G --> H[Threshold tuning]
-    H --> I[One test-set evaluation]
-    I --> J[SHAP explainability]
-    J --> K[Saved model]
+flowchart TB
+    subgraph P1["Phase 1: Data foundation"]
+        A["Raw data<br/>Telco churn, 7,043 customers x 21 columns"]
+        B["Cleaning<br/>Fix TotalCharges, merge redundant categories,<br/>encode target, drop customerID"]
+        C["Exploratory analysis<br/>Churn vs every feature, segments, correlations"]
+        D["Feature engineering<br/>num_addons, has_security_support,<br/>auto_pay, tenure_group"]
+        A -->|"leakage check"| B --> C -->|"findings drive new features"| D
+    end
+
+    subgraph P2["Phase 2: Split before fitting"]
+        S["Stratified 80/20 split<br/>random_state = 42"]
+        TR["Training set<br/>5,634 rows, 26.5% churn"]
+        TE["Test set<br/>1,409 rows, 26.5% churn<br/>locked until final evaluation"]
+        S --> TR
+        S --> TE
+    end
+
+    subgraph P3["Phase 3: Model selection (training data only)"]
+        PRE["Preprocessing pipeline<br/>scale numerics, one-hot encode categoricals<br/>refitted inside every CV fold"]
+        M["Train 5 models<br/>Logistic Regression, Decision Tree, Random Forest,<br/>Gradient Boosting, XGBoost"]
+        CV["Compare fairly<br/>same folds, same seed, 5-fold stratified CV<br/>Accuracy, Precision, Recall, F1, ROC-AUC"]
+        CHK["Diagnostics<br/>class weighting effect,<br/>decision tree overfitting"]
+        TUNE["Tune top 3 models<br/>RandomizedSearchCV, 20 iterations,<br/>scored by ROC-AUC"]
+        SEL["Select final model<br/>XGBoost, CV ROC-AUC 0.850"]
+        PRE --> M --> CV
+        CV --> CHK
+        CV --> TUNE --> SEL
+    end
+
+    subgraph P4["Phase 4: Decision threshold (training data only)"]
+        OOF["Out-of-fold predicted probabilities"]
+        THR["Maximise F2 (recall weighted 2x)<br/>Threshold = 0.17"]
+        OOF -->|"a missed churner costs more than a false alarm"| THR
+    end
+
+    subgraph P5["Phase 5: Final evaluation (test set used once)"]
+        FIT["Refit final model on full training set"]
+        EVAL["Evaluate on unseen test set<br/>Recall 88.5%, Precision 44.9%, ROC-AUC 0.848"]
+        CM["Confusion matrix<br/>331 caught, 43 missed, 406 false alarms"]
+        FIT --> EVAL --> CM
+    end
+
+    subgraph P6["Phase 6: Insight and delivery"]
+        SHAP["SHAP explainability<br/>global drivers and per-customer explanations"]
+        BI["Business insights<br/>risk segments and retention hypotheses"]
+        SAVE["Saved artifact<br/>churn_model.joblib: pipeline, XGBoost, threshold"]
+        APP["Prediction interface<br/>FastAPI and web UI"]
+        SHAP --> BI
+        SHAP --> SAVE --> APP
+    end
+
+    D --> S
+    TR --> PRE
+    SEL --> OOF
+    THR --> FIT
+    TE -.->|"used exactly once"| EVAL
+    CM --> SHAP
+
+    classDef data fill:#e8f1fb,stroke:#2b6cb0,color:#1a202c
+    classDef model fill:#e6f6ec,stroke:#2f855a,color:#1a202c
+    classDef eval fill:#fff4e0,stroke:#c05621,color:#1a202c
+    classDef lock fill:#fde8e8,stroke:#c53030,color:#1a202c
+    classDef out fill:#f3e8ff,stroke:#6b46c1,color:#1a202c
+    class A,B,C,D,S,TR data
+    class PRE,M,CV,CHK,TUNE,SEL,OOF,THR model
+    class FIT,EVAL,CM eval
+    class TE lock
+    class SHAP,BI,SAVE,APP out
 ```
 
 Principles followed throughout:
