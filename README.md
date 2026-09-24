@@ -69,3 +69,42 @@ Class imbalance handled via class weights (`class_weight="balanced"`, sample wei
 - Effect of class weighting (Logistic Regression): recall rose from 0.538 to 0.795 and precision fell from 0.665 to 0.517. Accuracy dropped from 0.805 to 0.748 and ROC-AUC was unchanged (0.846). Weighting catches more churners at the cost of more false alarms.
 - Effect of removing the Decision Tree depth limit: train recall 0.999 vs CV recall 0.492, and ROC-AUC fell from 0.828 to 0.658. This is severe overfitting, so a depth limit is required.
 - Random Forest has the highest precision (0.565) and F1 (0.639) but the lowest recall of the top four (0.734).
+
+## Model Comparison
+5-fold stratified cross-validation on the training set (same folds, preprocessing, and seed for every model). Class imbalance handled with class weights.
+
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|---|---|---|---|---|---|
+| Gradient Boosting | 0.750 | 0.519 | 0.793 | 0.627 | 0.847 |
+| Logistic Regression | 0.748 | 0.517 | 0.795 | 0.626 | 0.846 |
+| Random Forest | 0.780 | 0.565 | 0.734 | 0.639 | 0.846 |
+| XGBoost | 0.759 | 0.532 | 0.783 | 0.633 | 0.843 |
+| Decision Tree (depth-limited) | 0.735 | 0.500 | 0.788 | 0.612 | 0.828 |
+
+- The four strongest models are effectively tied on ROC-AUC (0.843-0.847), and the simple Logistic Regression baseline is not beaten.
+- Class weighting (Logistic Regression): recall rose from 0.538 to 0.795 and precision fell from 0.665 to 0.517. Accuracy dropped from 0.805 to 0.748 and ROC-AUC was unchanged (0.846).
+- Removing the Decision Tree depth limit: train recall 0.999 vs CV recall 0.492, and ROC-AUC fell from 0.828 to 0.658, which is severe overfitting.
+
+## Final Model and Evaluation
+- Hyperparameter tuning: `RandomizedSearchCV` (20 iterations, 5-fold stratified CV, scored by ROC-AUC).
+
+| Tuned model | Best CV ROC-AUC |
+|---|---|
+| XGBoost | 0.8502 |
+| Gradient Boosting | 0.8499 |
+| Random Forest | 0.8481 |
+| Logistic Regression (baseline, untuned) | 0.846 |
+
+- Final model: XGBoost, selected for the highest cross-validated ROC-AUC. Its gain over the baseline is only +0.004, so the dataset has a limited signal ceiling and model choice matters less than data quality.
+- Class imbalance is handled by threshold tuning. The threshold (0.17) maximises F2 (recall weighted twice as heavily as precision) on out-of-fold training predictions, since a missed churner costs lost revenue while a false alarm costs only a retention offer.
+- Test set results (1,409 customers, evaluated once):
+
+| Threshold | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|---|---|---|---|---|---|
+| 0.50 (default) | 0.802 | 0.664 | 0.513 | 0.579 | 0.848 |
+| 0.17 (tuned) | 0.681 | 0.449 | 0.885 | 0.596 | 0.848 |
+
+- Confusion matrix (threshold 0.17): 331 churners caught, 43 missed, 406 false alarms, 629 loyal customers correctly left alone. The model flags 737 customers, and 45% of them actually churn.
+- Trade-off: lowering the threshold raises recall from 51% to 89% at the cost of accuracy and precision. Retention offers should therefore be cheap to send.
+- Test ROC-AUC (0.848) matches cross-validation (0.850), so there is no sign of overfitting or leakage.
+- Saved model: `models/churn_model.joblib` (preprocessing pipeline, XGBoost, and the tuned threshold).
