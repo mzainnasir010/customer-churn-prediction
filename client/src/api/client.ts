@@ -3,8 +3,12 @@ import type { Customer, ModelInfo, Options, Prediction, BatchResult } from '../t
 const BASE = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 
 export class ApiError extends Error {
-  constructor(public kind: 'validation' | 'api' | 'network', message: string) {
+  public kind: 'validation' | 'api' | 'network'
+
+  constructor(kind: 'validation' | 'api' | 'network', message: string) {
     super(message)
+    this.kind = kind
+    this.name = 'ApiError'
   }
 }
 

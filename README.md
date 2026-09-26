@@ -227,6 +227,9 @@ churn-prediction/
 │   │   │   └── model_service.py          # Model inference, feature builder & SHAP engine
 │   │   ├── __init__.py
 │   │   └── main.py                       # FastAPI initialization & lifespan handler
+│   ├── models/                           # Bundled standalone model artifacts for cloud deployment
+│   │   ├── churn_model.joblib
+│   │   └── final_test_results.csv
 │   ├── requirements.txt                  # Server dependencies (FastAPI, uvicorn, xgboost, joblib)
 │   └── venv/                             # Virtual environment
 │
