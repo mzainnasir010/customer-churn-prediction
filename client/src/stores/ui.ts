@@ -14,6 +14,9 @@ export const useUi = defineStore('ui', () => {
     toasts.value.push({ id, kind, text })
     setTimeout(() => (toasts.value = toasts.value.filter((t) => t.id !== id)), 4500)
   }
+  function dismiss(id: number) {
+    toasts.value = toasts.value.filter((t) => t.id !== id)
+  }
   apply()
-  return { theme, toggle, toasts, toast }
+  return { theme, toggle, toasts, toast, dismiss }
 })
