@@ -18,18 +18,12 @@ function scrollToTop() {
           <RouterLink to="/" class="footer-brand">
             <div class="footer-logo"></div>
             <span class="footer-brand-title">ChurnIQ</span>
-            <span class="footer-version">v1.0</span>
           </RouterLink>
 
           <p class="footer-desc">
             Explainable machine learning engine for telecom customer churn prediction. 
             Powered by tuned XGBoost, SHAP driver attributions, and real-time retention scenario simulation.
           </p>
-
-          <div class="footer-status-pill">
-            <span class="status-dot"></span>
-            <span>XGBoost Core Online • 88.5% Recall</span>
-          </div>
         </div>
 
         <!-- LINK COLUMN 1: PLATFORM -->
@@ -70,7 +64,7 @@ function scrollToTop() {
       <!-- Bottom Bar: Attribution & Copyright -->
       <div class="footer-bottom">
         <div class="footer-copy">
-          <span>&copy; {{ new Date().getFullYear() }} ChurnIQ. Built by <strong>Muhammad Zain Nasir</strong> for the <strong>seKer AI Internship</strong>.</span>
+          <span>&copy; {{ new Date().getFullYear() }} ChurnIQ. Built by <strong>Muhammad Zain Nasir</strong>.</span>
         </div>
 
         <div class="footer-actions">

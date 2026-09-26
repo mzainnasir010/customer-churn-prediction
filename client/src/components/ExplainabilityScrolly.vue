@@ -85,7 +85,66 @@ function getItemWidth(val: number, index: number) {
   <div ref="rootEl" class="es-root" aria-label="Interactive SHAP explainability scrollytelling">
     <div class="es-grid">
 
-      <!-- LEFT COLUMN: Scroll Steps -->
+      <!-- LEFT COLUMN: Sticky Dynamic SHAP Waterfall Panel (CHART ON LEFT) -->
+      <div class="es-panel-wrap">
+        <div class="es-panel card glass">
+
+          <div class="es-panel-header">
+            <div class="es-panel-title">
+              <span>SHAP Global Driver Breakdown</span>
+              <h3 class="h3" style="margin:0">Impact on Churn Risk</h3>
+            </div>
+            <div class="es-legend">
+              <span class="leg-item low"><i /> Lowers churn risk</span>
+              <span class="leg-item high"><i /> Raises churn risk</span>
+            </div>
+          </div>
+
+          <!-- SHAP Bar List -->
+          <ul class="es-shap-list">
+            <li 
+              v-for="(it, i) in items" 
+              :key="it.label"
+              class="es-shap-item"
+              :class="{ 
+                'is-focused': isItemActive(i), 
+                'is-positive': it.value > 0, 
+                'is-negative': it.value < 0 
+              }"
+            >
+              <div class="es-row-top">
+                <span class="es-label">{{ it.label }}</span>
+                <span class="es-val" :class="it.value > 0 ? 'high-val' : 'low-val'">
+                  {{ it.value > 0 ? `+${it.value.toFixed(3)}` : it.value.toFixed(3) }}
+                </span>
+              </div>
+
+              <div class="es-track-container">
+                <span class="es-mid-line" />
+                <span 
+                  class="es-bar" 
+                  :class="it.value > 0 ? 'up' : 'down'"
+                  :style="{ 
+                    width: getItemWidth(it.value, i), 
+                    transitionDelay: `${(i % 2) * 80}ms` 
+                  }" 
+                />
+              </div>
+
+              <div class="es-sub">{{ it.sub }}</div>
+            </li>
+          </ul>
+
+          <div class="es-footer-note">
+            <p class="muted" style="margin:0">
+              * Bars represent mean absolute SHAP values calculated across 1,409 test set predictions.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Scroll Steps (DIVS ON RIGHT) -->
       <div class="es-steps">
 
         <div class="es-header">
@@ -151,65 +210,6 @@ function getItemWidth(val: number, index: number) {
 
       </div>
 
-      <!-- RIGHT COLUMN: Sticky Dynamic SHAP Waterfall Panel -->
-      <div class="es-panel-wrap">
-        <div class="es-panel card glass">
-
-          <div class="es-panel-header">
-            <div class="es-panel-title">
-              <span>SHAP Global Driver Breakdown</span>
-              <h3 class="h3" style="margin:0">Impact on Churn Risk</h3>
-            </div>
-            <div class="es-legend">
-              <span class="leg-item low"><i /> Lowers churn risk</span>
-              <span class="leg-item high"><i /> Raises churn risk</span>
-            </div>
-          </div>
-
-          <!-- SHAP Bar List -->
-          <ul class="es-shap-list">
-            <li 
-              v-for="(it, i) in items" 
-              :key="it.label"
-              class="es-shap-item"
-              :class="{ 
-                'is-focused': isItemActive(i), 
-                'is-positive': it.value > 0, 
-                'is-negative': it.value < 0 
-              }"
-            >
-              <div class="es-row-top">
-                <span class="es-label">{{ it.label }}</span>
-                <span class="es-val" :class="it.value > 0 ? 'high-val' : 'low-val'">
-                  {{ it.value > 0 ? `+${it.value.toFixed(3)}` : it.value.toFixed(3) }}
-                </span>
-              </div>
-
-              <div class="es-track-container">
-                <span class="es-mid-line" />
-                <span 
-                  class="es-bar" 
-                  :class="it.value > 0 ? 'up' : 'down'"
-                  :style="{ 
-                    width: getItemWidth(it.value, i), 
-                    transitionDelay: `${(i % 2) * 80}ms` 
-                  }" 
-                />
-              </div>
-
-              <div class="es-sub">{{ it.sub }}</div>
-            </li>
-          </ul>
-
-          <div class="es-footer-note">
-            <p class="muted" style="margin:0">
-              * Bars represent mean absolute SHAP values calculated across 1,409 test set predictions.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
     </div>
   </div>
 </template>
@@ -223,99 +223,12 @@ function getItemWidth(val: number, index: number) {
 
 .es-grid {
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: 1.1fr 1fr;
   gap: 3.5rem;
   align-items: start;
 }
 
-/* ── LEFT COLUMN ── */
-.es-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.es-header {
-  margin-bottom: 1rem;
-}
-
-.es-step {
-  padding: 1.75rem;
-  border-radius: var(--r);
-  border: 1px solid var(--border);
-  opacity: 0.45;
-  filter: saturate(0.5);
-  transform: translateY(10px);
-  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), filter 0.5s var(--ease), border-color 0.5s var(--ease);
-}
-
-.es-step.is-active {
-  opacity: 1;
-  filter: saturate(1);
-  transform: translateY(0);
-  border-color: var(--accent);
-  box-shadow: 0 8px 32px color-mix(in srgb, var(--accent) 15%, transparent);
-}
-
-.es-step-tag {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  background: var(--surface2);
-  color: var(--muted);
-  margin-bottom: 0.75rem;
-}
-
-.es-step.is-active .es-step-tag {
-  background: color-mix(in srgb, var(--accent) 15%, var(--surface2));
-  color: var(--accent);
-}
-
-.es-step-title {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-}
-
-.es-step-text {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-  color: var(--muted);
-}
-
-.es-highlights {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.es-badge {
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.25rem 0.65rem;
-  border-radius: 99px;
-}
-
-.es-badge.high {
-  background: color-mix(in srgb, var(--high) 15%, var(--surface2));
-  color: var(--high);
-  border: 1px solid color-mix(in srgb, var(--high) 30%, transparent);
-}
-
-.es-badge.low {
-  background: color-mix(in srgb, var(--low) 15%, var(--surface2));
-  color: var(--low);
-  border: 1px solid color-mix(in srgb, var(--low) 30%, transparent);
-}
-
-.es-cta-row {
-  margin-top: 1rem;
-}
-
-/* ── RIGHT COLUMN (STICKY PANEL) ── */
+/* ── LEFT COLUMN (STICKY PANEL) ── */
 .es-panel-wrap {
   position: sticky;
   top: 6rem;
@@ -465,6 +378,93 @@ function getItemWidth(val: number, index: number) {
   font-size: 0.78rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--border);
+}
+
+/* ── RIGHT COLUMN (STEPS) ── */
+.es-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.es-header {
+  margin-bottom: 1rem;
+}
+
+.es-step {
+  padding: 1.75rem;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  opacity: 0.45;
+  filter: saturate(0.5);
+  transform: translateY(10px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), filter 0.5s var(--ease), border-color 0.5s var(--ease);
+}
+
+.es-step.is-active {
+  opacity: 1;
+  filter: saturate(1);
+  transform: translateY(0);
+  border-color: var(--accent);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.es-step-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.es-step.is-active .es-step-tag {
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface2));
+  color: var(--accent);
+}
+
+.es-step-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.es-step-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: var(--muted);
+}
+
+.es-highlights {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.es-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 99px;
+}
+
+.es-badge.high {
+  background: color-mix(in srgb, var(--high) 15%, var(--surface2));
+  color: var(--high);
+  border: 1px solid color-mix(in srgb, var(--high) 30%, transparent);
+}
+
+.es-badge.low {
+  background: color-mix(in srgb, var(--low) 15%, var(--surface2));
+  color: var(--low);
+  border: 1px solid color-mix(in srgb, var(--low) 30%, transparent);
+}
+
+.es-cta-row {
+  margin-top: 1rem;
 }
 
 /* ── RESPONSIVE ── */
