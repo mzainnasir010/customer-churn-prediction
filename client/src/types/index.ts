@@ -6,3 +6,6 @@ export interface ModelInfo {
   model: string; decision_threshold: number; input_features: number
   risk_tiers: Record<string, string>; test_set_evaluation: Record<string, Record<string, number>> | null
 }
+export interface BarItem { label: string; value: number; text?: string }
+export interface ImpactItem { label: string; value: number; sub?: string }
+export interface BatchResult { count: number; flagged: number; results: Prediction[] }

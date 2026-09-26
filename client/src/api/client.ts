@@ -1,9 +1,11 @@
-import type { Customer, ModelInfo, Options, Prediction } from '../types'
+import type { Customer, ModelInfo, Options, Prediction, BatchResult } from '../types'
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 
 export class ApiError extends Error {
-  constructor(public kind: 'validation' | 'api' | 'network', message: string) { super(message) }
+  constructor(public kind: 'validation' | 'api' | 'network', message: string) {
+    super(message)
+  }
 }
 
 async function request<T>(path: string, init?: RequestInit, retries = 1): Promise<T> {
@@ -13,11 +15,21 @@ async function request<T>(path: string, init?: RequestInit, retries = 1): Promis
       signal: AbortSignal.timeout(15000),
       ...init,
     })
+
     if (res.status === 422) {
       const body = await res.json()
-      throw new ApiError('validation', body.detail.map((d: any) => `${d.loc.slice(1).join('.')}: ${d.msg}`).join('; '))
+      throw new ApiError(
+        'validation',
+        body.detail
+          .map((d: any) => `${d.loc.slice(1).join('.')}: ${d.msg}`)
+          .join('; '),
+      )
     }
-    if (!res.ok) throw new ApiError('api', `Server error (${res.status})`)
+
+    if (!res.ok) {
+      throw new ApiError('api', `Server error (${res.status})`)
+    }
+
     return (await res.json()) as T
   } catch (e) {
     if (e instanceof ApiError) throw e
@@ -28,6 +40,22 @@ async function request<T>(path: string, init?: RequestInit, retries = 1): Promis
 
 export const api = {
   options: () => request<Options>('/model/options'),
+
   info: () => request<ModelInfo>('/model/info'),
-  predict: (c: Customer) => request<Prediction>('/predict', { method: 'POST', body: JSON.stringify(c) }),
+
+  predict: (c: Customer) =>
+    request<Prediction>('/predict', {
+      method: 'POST',
+      body: JSON.stringify(c),
+    }),
+
+  predictBatch: (customers: Customer[]) =>
+  request<BatchResult>('/predict/batch', { method: 'POST', body: JSON.stringify({ customers }) }),
+
+  health: async () => {
+    const t = performance.now()
+    const r = await request<{ status: string; model_loaded: boolean }>('/health', undefined, 0)
+    return { ...r, ms: Math.round(performance.now() - t) }
+  },
 }
+

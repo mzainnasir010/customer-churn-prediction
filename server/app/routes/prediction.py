@@ -14,5 +14,5 @@ def predict_one(customer: CustomerInput, svc: ModelService = Depends(get_model_s
 
 @router.post("/batch", response_model=BatchResponse)
 def predict_batch(payload: BatchRequest, svc: ModelService = Depends(get_model_service)):
-    results = svc.predict(payload.customers, explain=False)
+    results = svc.predict(payload.customers)  # explain=True by default, drivers included
     return BatchResponse(count=len(results), flagged=sum(r.at_risk for r in results), results=results)
