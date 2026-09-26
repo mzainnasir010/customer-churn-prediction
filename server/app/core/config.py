@@ -1,8 +1,12 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 SERVER_DIR = Path(__file__).resolve().parents[2]  # server/
 ROOT_DIR = SERVER_DIR.parent                      # churn-prediction/
+
+# Load local .env file if present
+load_dotenv(SERVER_DIR / ".env")
 
 def _resolve(server_rel: str, notebook_rel: str) -> Path:
     server_path = SERVER_DIR / server_rel
@@ -15,9 +19,24 @@ METRICS_PATH = Path(os.getenv("METRICS_PATH", _resolve("models/final_test_result
 
 APP_TITLE = "Customer Churn Prediction API"
 APP_VERSION = "1.0.0"
-CORS_ORIGINS = os.getenv(
-    "CORS_ORIGINS", "http://localhost:5173,http://localhost:5174,http://localhost:4173,http://127.0.0.1:5173"
-).split(",")
+def _parse_cors(raw: str | None) -> list[str]:
+    if not raw or not raw.strip():
+        return []
+    origins = set()
+    for item in raw.split(","):
+        cleaned = item.strip().rstrip("/")
+        if not cleaned:
+            continue
+        if cleaned == "*":
+            return ["*"]
+        origins.add(cleaned)
+        if "localhost" in cleaned:
+            origins.add(cleaned.replace("localhost", "127.0.0.1"))
+        elif "127.0.0.1" in cleaned:
+            origins.add(cleaned.replace("127.0.0.1", "localhost"))
+    return list(origins)
+
+CORS_ORIGINS = _parse_cors(os.getenv("CORS_ORIGINS"))
 
 HIGH_RISK_THRESHOLD = 0.50  # High tier: churn is more likely than not
 MAX_BATCH_SIZE = 500
