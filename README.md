@@ -747,4 +747,4 @@ Once both processes are active, navigate to `http://localhost:5173` in your brow
 ## Author
 
 **Muhammad Zain Nasir**
-[GitHub](https://github.com/mzainnasir010) | [LinkedIn](https://www.linkedin.com/in/muhammadin-zain-nasir/) | [Portfolio](https://muhammad-zain-nasir.vercel.app/)
+[GitHub](https://github.com/mzainnasir010) | [LinkedIn](https://www.linkedin.com/in/muhammadin-zain-nasir/) | [Portfolio](https://www.mzainnasir.dev/)
