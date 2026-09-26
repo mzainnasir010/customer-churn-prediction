@@ -12,6 +12,38 @@ export class ApiError extends Error {
   }
 }
 
+function formatValidationError(details: any[]): string {
+  if (!Array.isArray(details) || !details.length) {
+    return 'Invalid input request.'
+  }
+
+  const missingFields = new Set<string>()
+  const otherErrors: string[] = []
+
+  for (const d of details) {
+    const field = d.loc && d.loc.length ? d.loc[d.loc.length - 1] : ''
+    const rowIdx = d.loc && typeof d.loc[2] === 'number' ? d.loc[2] + 1 : null
+
+    if (d.type === 'missing' || d.msg?.toLowerCase().includes('required')) {
+      if (field) missingFields.add(String(field))
+    } else {
+      const fieldStr = field ? `'${field}' ` : ''
+      const rowStr = rowIdx ? `Row ${rowIdx}: ` : ''
+      otherErrors.push(`${rowStr}${fieldStr}${d.msg}`)
+    }
+  }
+
+  const parts: string[] = []
+  if (missingFields.size > 0) {
+    parts.push(`Missing required column(s): ${Array.from(missingFields).join(', ')}`)
+  }
+  if (otherErrors.length > 0) {
+    parts.push(otherErrors.slice(0, 3).join('; '))
+  }
+
+  return parts.join('. ') || 'Validation error'
+}
+
 async function request<T>(path: string, init?: RequestInit, retries = 1): Promise<T> {
   try {
     const res = await fetch(BASE + path, {
@@ -22,12 +54,7 @@ async function request<T>(path: string, init?: RequestInit, retries = 1): Promis
 
     if (res.status === 422) {
       const body = await res.json()
-      throw new ApiError(
-        'validation',
-        body.detail
-          .map((d: any) => `${d.loc.slice(1).join('.')}: ${d.msg}`)
-          .join('; '),
-      )
+      throw new ApiError('validation', formatValidationError(body.detail))
     }
 
     if (!res.ok) {

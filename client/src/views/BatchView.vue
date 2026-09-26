@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { api } from '../api/client'
 import { useUi } from '../stores/ui'
 import { parseCsv, toCsv, downloadText, SAMPLE_CSV } from '../utils/csv'
@@ -17,6 +17,10 @@ const error = ref('')
 const result = ref<BatchResult | null>(null)
 const filter = ref<'all' | 'flagged'>('all')
 const expanded = ref<number | null>(null)
+
+// Pagination state
+const currentPage = ref(1)
+const pageSize = ref(15)
 
 const MAX_ROWS = 500
 
@@ -48,12 +52,12 @@ function loadSample() {
 }
 
 function reset() {
-  rows.value = []; parseErrors.value = []; fileName.value = ''; result.value = null; status.value = 'idle'; error.value = ''; expanded.value = null
+  rows.value = []; parseErrors.value = []; fileName.value = ''; result.value = null; status.value = 'idle'; error.value = ''; expanded.value = null; currentPage.value = 1
 }
 
 async function run() {
   if (!rows.value.length) return
-  status.value = 'loading'; error.value = ''; expanded.value = null
+  status.value = 'loading'; error.value = ''; expanded.value = null; currentPage.value = 1
   try {
     result.value = await api.predictBatch(rows.value)
     status.value = 'success'
@@ -64,12 +68,34 @@ async function run() {
   }
 }
 
-const visibleRows = computed(() => {
+// Reset pagination on filter or dataset change
+watch([filter, result], () => {
+  currentPage.value = 1
+  expanded.value = null
+})
+
+const filteredRows = computed(() => {
   if (!result.value) return []
   return result.value.results
     .map((r, i) => ({ ...r, row: rows.value[i], idx: i }))
     .filter((r) => filter.value === 'all' || r.at_risk)
 })
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredRows.value.length / pageSize.value) || 1
+})
+
+const paginatedRows = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredRows.value.slice(start, start + pageSize.value)
+})
+
+function setPage(p: number) {
+  if (p >= 1 && p <= totalPages.value) {
+    currentPage.value = p
+    expanded.value = null
+  }
+}
 
 function toggle(i: number) { expanded.value = expanded.value === i ? null : i }
 
@@ -143,7 +169,7 @@ function exportCsv() {
           <table>
             <thead><tr><th /><th>#</th><th>Contract</th><th>Tenure</th><th>Monthly</th><th>Probability</th><th>Risk</th><th>Top driver</th></tr></thead>
             <tbody>
-              <template v-for="r in visibleRows" :key="r.idx">
+              <template v-for="r in paginatedRows" :key="r.idx">
                 <tr class="row-click" tabindex="0" role="button" title="Click to view details" :aria-expanded="expanded === r.idx" @click="toggle(r.idx)" @keydown.enter="toggle(r.idx)">
                   <td>{{ expanded === r.idx ? '▾' : '▸' }}</td>
                   <td>{{ r.idx + 1 }}</td>
@@ -182,6 +208,30 @@ function exportCsv() {
               </template>
             </tbody>
           </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div v-if="filteredRows.length > 0" class="between" style="margin-top: 1.25rem; flex-wrap: wrap; gap: 1rem; align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.86rem;" class="muted">
+            <span>Showing {{ (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize, filteredRows.length) }} of {{ filteredRows.length }}</span>
+            <span>•</span>
+            <label for="page-size" style="margin:0; font-weight: 500;">Per page:</label>
+            <select id="page-size" v-model.number="pageSize" @change="currentPage = 1" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);">
+              <option :value="10">10</option>
+              <option :value="15">15</option>
+              <option :value="25">25</option>
+              <option :value="50">50</option>
+              <option :value="100">100</option>
+            </select>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <button class="btn" style="padding: 0.35rem 0.65rem; font-size: 0.85rem;" :disabled="currentPage <= 1" @click="setPage(1)" title="First Page">«</button>
+            <button class="btn" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" :disabled="currentPage <= 1" @click="setPage(currentPage - 1)">‹ Prev</button>
+            <span style="font-size: 0.86rem; font-weight: 600; padding: 0 0.5rem;" class="muted">Page {{ currentPage }} of {{ totalPages }}</span>
+            <button class="btn" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" :disabled="currentPage >= totalPages" @click="setPage(currentPage + 1)">Next ›</button>
+            <button class="btn" style="padding: 0.35rem 0.65rem; font-size: 0.85rem;" :disabled="currentPage >= totalPages" @click="setPage(totalPages)" title="Last Page">»</button>
+          </div>
         </div>
       </div>
     </template>

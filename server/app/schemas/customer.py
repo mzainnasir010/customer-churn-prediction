@@ -11,7 +11,7 @@ class CustomerInput(BaseModel):
     """Raw customer attributes, as they appear in the Telco dataset."""
 
     model_config = ConfigDict(
-        extra="forbid",
+        extra="ignore",
         json_schema_extra={
             "example": {
                 "gender": "Female", "SeniorCitizen": 0, "Partner": "No", "Dependents": "No",

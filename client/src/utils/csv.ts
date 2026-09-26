@@ -27,9 +27,16 @@ export function parseCsv(text: string): { rows: Customer[]; errors: string[] } {
     if (cells.length !== headers.length) { errors.push(`Row ${i + 2}: expected ${headers.length} columns, got ${cells.length}`); return }
     const row: Customer = {}
     headers.forEach((h, j) => {
-      const raw = cells[j]
-      if (h === 'TotalCharges' && raw === '') { row[h] = null; return }
-      row[h] = NUMERIC.has(h) ? Number(raw) : raw
+      const raw = cells[j] ? cells[j].trim() : ''
+      if (h === 'TotalCharges' && (raw === '' || raw === 'null')) {
+        row[h] = null
+        return
+      }
+      if (NUMERIC.has(h)) {
+        row[h] = raw === '' ? null : Number(raw)
+      } else {
+        row[h] = raw
+      }
     })
     rows.push(row)
   })
