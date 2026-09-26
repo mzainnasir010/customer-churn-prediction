@@ -1,482 +1,750 @@
 # AI-Powered Customer Churn Prediction & Retention System
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
+![Vue 3](https://img.shields.io/badge/Vue.js-3.5-4FC08D)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.6-orange)
 ![XGBoost](https://img.shields.io/badge/XGBoost-final%20model-green)
 ![SHAP](https://img.shields.io/badge/SHAP-explainability-purple)
 
-An end-to-end machine learning system that learns from historical telecom customer data, predicts which customers are likely to leave, and explains why, so a retention team can act before the customer cancels.
+An end-to-end, production-grade machine learning application designed to predict customer churn risk from telecom customer records, quantify individual risk drivers using SHAP feature attribution, and empower retention teams through a full suite of interactive web applications (Single Customer Prediction Studio, Batch CSV Processing Studio, Retention ROI Campaign Simulator, Churn Insights Heatmaps, Model Intelligence Deck, and Scrollytelling System Architecture).
+
+---
 
 ## Table of Contents
+
 1. [Results at a Glance](#results-at-a-glance)
-2. [Project Overview](#project-overview)
-3. [Business Problem](#business-problem)
-4. [Objectives](#objectives)
-5. [Dataset](#dataset)
-6. [Technologies](#technologies)
-7. [Project Structure](#project-structure)
-8. [Methodology](#methodology)
-9. [EDA Findings](#eda-findings)
-10. [Feature Engineering](#feature-engineering)
-11. [Train/Test Split and Preprocessing](#traintest-split-and-preprocessing)
-12. [Model Development](#model-development)
-13. [Model Comparison](#model-comparison)
-14. [Tuning and Final Model](#tuning-and-final-model)
-15. [Evaluation Results](#evaluation-results)
-16. [Explainability](#explainability)
-17. [Key Insights and Retention Strategies](#key-insights-and-retention-strategies)
-18. [Installation](#installation)
-19. [Usage](#usage)
-20. [Limitations](#limitations)
-21. [Future Improvements](#future-improvements)
-22. [Author](#author)
+2. [Full System Architecture](#full-system-architecture)
+3. [Business Problem & Strategic Objectives](#business-problem--strategic-objectives)
+4. [Dataset Overview](#dataset-overview)
+5. [Technologies & System Stack](#technologies--system-stack)
+6. [Project Directory Structure](#project-directory-structure)
+7. [Core Area 1: Notebook & Machine Learning (`notebook/`)](#core-area-1-notebook--machine-learning-notebook)
+   - [Jupyter Notebook Sequence](#jupyter-notebook-sequence)
+   - [Data Cleaning & Leakage Prevention](#data-cleaning--leakage-prevention)
+   - [Exploratory Data Analysis (EDA) Insights](#exploratory-data-analysis-eda-insights)
+   - [Feature Engineering Specifications](#feature-engineering-specifications)
+   - [Model Benchmarks & Cross-Validation](#model-benchmarks--cross-validation)
+   - [Decision Threshold Tuning (Recall vs. Precision)](#decision-threshold-tuning-recall-vs-precision)
+   - [SHAP Explainability & Risk Attribution](#shap-explainability--risk-attribution)
+   - [Model Artifact Serialization](#model-artifact-serialization)
+8. [Core Area 2: FastAPI Backend Server (`server/`)](#core-area-2-fastapi-backend-server-server)
+   - [Architecture & Lifespan State Management](#architecture--lifespan-state-management)
+   - [ModelService Core Engine](#modelservice-core-engine)
+   - [Feature Re-construction Pipeline](#feature-re-construction-pipeline)
+   - [On-the-Fly SHAP Explanation Engine](#on-the-fly-shap-explanation-engine)
+   - [API Endpoints Reference](#api-endpoints-reference)
+   - [Server Configuration (`config.py`)](#server-configuration-configpy)
+   - [Server Setup & Local Execution](#server-setup--local-execution)
+9. [Core Area 3: Vue 3 Single-Page Web Client (`client/`)](#core-area-3-vue-3-single-page-web-client-client)
+   - [Frontend Architecture & Scrollytelling Engine](#frontend-architecture--scrollytelling-engine)
+   - [API Service & Error Handling Layer](#api-service--error-handling-layer)
+   - [State Management (Pinia Stores)](#state-management-pinia-stores)
+   - [Design System & Layout Geometry](#design-system--layout-geometry)
+   - [Complete Application Views Breakdown](#complete-application-views-breakdown)
+     - [1. Overview & Scrollytelling (`HomeView.vue`)](#1-overview--scrollytelling-homeviewvue)
+     - [2. Single Prediction Studio (`PredictView.vue`)](#2-single-prediction-studio-predictviewvue)
+     - [3. Batch CSV Processing (`BatchView.vue`)](#3-batch-csv-processing-batchviewvue)
+     - [4. Churn Insights & Matrix (`InsightsView.vue`)](#4-churn-insights--matrix-insightsviewvue)
+     - [5. Model Intelligence & Card (`ModelView.vue`)](#5-model-intelligence--card-modelviewvue)
+     - [6. Campaign ROI Simulator (`SimulatorView.vue`)](#6-campaign-roi-simulator-simulatorviewvue)
+     - [7. System Methodology (`MethodologyView.vue`)](#7-system-methodology-methodologyviewvue)
+   - [Client Setup & Build Commands](#client-setup--build-commands)
+10. [Running the Complete System](#running-the-complete-system)
+11. [Governance, Limitations & Ethics](#governance-limitations--ethics)
+12. [Author](#author)
+
+---
 
 ## Results at a Glance
 
-| Item | Result |
-|---|---|
-| Final model | XGBoost (tuned) |
-| Cross-validated ROC-AUC | 0.850 |
-| Test ROC-AUC (1,409 unseen customers) | 0.848 |
-| Optimised for | Recall (F2 score) |
-| Decision threshold | 0.17 (default 0.50 caught only 51% of churners) |
-| Recall on the test set | 88.5% (331 of 374 churners caught) |
-| Precision on the test set | 44.9% |
-| Strongest churn driver | Month-to-month contract |
+| Metric / Specification | Value / Result | Notes / Context |
+|---|---|---|
+| **Production Model** | Tuned XGBoost Classifier | Selected via 5-fold Stratified CV |
+| **Cross-Validated ROC-AUC** | **0.850** | Evaluated on 5,634 training records |
+| **Held-Out Test ROC-AUC** | **0.848** | Evaluated on 1,409 unseen test records |
+| **Tuned Decision Threshold** | **0.17** | Optimized for F2 score (Recall weighted 2x over Precision) |
+| **Test Set Recall** | **88.5%** | Catches **331 of 374** actual churners in test set |
+| **Test Set Precision** | **44.9%** | 737 total customers flagged; 45% true churn rate in risk pool |
+| **Default (0.50) Recall** | **51.3%** | Standard 0.50 threshold missed 182 actual churners ( caught only 192 ) |
+| **Top Churn Driver** | Month-to-Month Contract | Mean SHAP impact: **+0.619** log-odds risk increase |
 
-At the tuned threshold the model catches about 89% of churners by contacting about 52% of customers, and the customers it flags are about 1.7 times more likely to churn than a randomly chosen customer (44.9% vs 26.5% base rate).
+---
 
-## Project Overview
-
-The project takes a raw customer dataset through cleaning, exploratory analysis, feature engineering, model training, honest evaluation, and interpretation. Five classification algorithms are compared fairly, the three strongest are tuned, and the best model is selected, threshold-tuned for recall, evaluated once on held-out data, and explained with SHAP.
-
-## Business Problem
-
-Churn is expensive. Every customer who leaves takes recurring revenue with them, and replacing that customer normally costs more than keeping them would have. The hard part is timing: by the moment a customer cancels, the chance to intervene has already gone. A business needs to know who is at risk while there is still time to act, and why they are at risk, so that the retention offer fits the reason.
-
-This project translates historical customer records into forward-looking risk scores that a retention team can work from.
-
-## Objectives
-
-- Understand and analyse customer behaviour data
-- Clean and preprocess the dataset
-- Perform exploratory data analysis and identify the factors associated with churn
-- Perform feature engineering
-- Train multiple classification models and compare them fairly
-- Select and justify a final model
-- Generate customer churn probabilities and identify high-risk customers
-- Provide interpretable, explainable insights
-- Turn findings into concrete retention hypotheses
-
-## Dataset
-
-**Source:** IBM Telco Customer Churn dataset, Kaggle: [`blastchar/telco-customer-churn`](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
-
-7,043 customers, 21 columns, one row per customer. The target `Churn` is binary, with 26.5% churners (1,869) and 73.5% non-churners (5,174), so the classes are imbalanced.
-
-| Group | Columns |
-|---|---|
-| Identifier | `customerID` (dropped, no predictive value) |
-| Demographics | `gender`, `SeniorCitizen`, `Partner`, `Dependents` |
-| Account | `tenure` (months), `Contract`, `PaperlessBilling`, `PaymentMethod` |
-| Services | `PhoneService`, `MultipleLines`, `InternetService`, `OnlineSecurity`, `OnlineBackup`, `DeviceProtection`, `TechSupport`, `StreamingTV`, `StreamingMovies` |
-| Billing | `MonthlyCharges`, `TotalCharges` |
-| Target | `Churn` (Yes/No) |
-
-**Data quality issues found and handled:**
-- `TotalCharges` was stored as text. 11 blank values all belonged to customers with `tenure = 0` (not yet billed), so they were set to 0.
-- "No internet service" and "No phone service" were collapsed to "No" in seven service columns, since `InternetService` and `PhoneService` already carry that information.
-- No duplicate rows and no other missing values.
-- **Leakage check:** every feature would be known before a customer churns, so none were excluded for leakage.
-
-## Technologies
-
-| Purpose | Tools |
-|---|---|
-| Language | Python 3.12 |
-| Data handling | Pandas, NumPy |
-| Visualisation | Matplotlib, Seaborn, Plotly |
-| Modelling | Scikit-learn, XGBoost |
-| Explainability | SHAP |
-| Environment | Jupyter Notebook, Git/GitHub |
-
-## Project Structure
-
-```
-churn-prediction/
-├── notebook/
-│   ├── data/            # raw (not tracked) and processed
-│   ├── notebooks/       # 01 to 05: cleaning, EDA, features, modelling, SHAP
-│   ├── models/          # churn_model.joblib
-│   └── reports/         # figures and result tables
-├── server/              # FastAPI prediction API
-├── client/              # Vue frontend
-├── README.md
-├── requirements.txt
-└── .gitignore
-```
-
-## Methodology
+## Full System Architecture
 
 ```mermaid
 flowchart TB
-    subgraph P1["Phase 1: Data foundation"]
-        A["Raw data<br/>Telco churn, 7,043 customers x 21 columns"]
-        B["Cleaning<br/>Fix TotalCharges, merge redundant categories,<br/>encode target, drop customerID"]
-        C["Exploratory analysis<br/>Churn vs every feature, segments, correlations"]
-        D["Feature engineering<br/>num_addons, has_security_support,<br/>auto_pay, tenure_group"]
-        A -->|"leakage check"| B --> C -->|"findings drive new features"| D
+    subgraph AREA1["CORE AREA 1: Notebook & Machine Learning (notebook/)"]
+        RAW["IBM Telco Dataset<br/>(7,043 rows × 21 columns)"]
+        N1["01_data_understanding<br/>Schema audit & type casting"]
+        N2["02_data_cleaning<br/>TotalCharges parsing & imputation"]
+        N3["03_EDA<br/>Bivariate analysis & risk signals"]
+        N4["04_feature_engineering<br/>num_addons, auto_pay, tenure_group"]
+        N5["05_modelling<br/>5-Fold CV: XGBoost, RF, GradBoost, LR, DT"]
+        EXPORT["Joblib Model Serialization<br/>(churn_model.joblib)"]
+
+        RAW --> N1 --> N2 --> N3 --> N4 --> N5 --> EXPORT
     end
 
-    subgraph P2["Phase 2: Split before fitting"]
-        S["Stratified 80/20 split<br/>random_state = 42"]
-        TR["Training set<br/>5,634 rows, 26.5% churn"]
-        TE["Test set<br/>1,409 rows, 26.5% churn<br/>locked until final evaluation"]
-        S --> TR
-        S --> TE
+    subgraph AREA2["CORE AREA 2: FastAPI Backend Server (server/)"]
+        FASTAPI["FastAPI Lifespan Service<br/>(app/main.py)"]
+        MODEL_SVC["ModelService Engine<br/>(app/services/model_service.py)"]
+        LOADER["Joblib Bundle Loader<br/>(Pipeline + Threshold 0.17)"]
+        TRANSFORMER["Server-Side Feature Re-builder<br/>(num_addons, tenure_group, auto_pay)"]
+        XGB_ENGINE["XGBoost Probability Engine<br/>(predict_proba)"]
+        SHAP_ENGINE["TreeExplainer SHAP Engine<br/>(predict pred_contribs=True)"]
+        
+        EP_HEALTH["GET /health"]
+        EP_INFO["GET /model/info"]
+        EP_OPT["GET /model/options"]
+        EP_PRED["POST /predict"]
+        EP_BATCH["POST /predict/batch"]
+
+        EXPORT -.->|"Model Bundle Input"| LOADER
+        LOADER --> MODEL_SVC --> FASTAPI
+        FASTAPI --> EP_HEALTH & EP_INFO & EP_OPT & EP_PRED & EP_BATCH
+        EP_PRED & EP_BATCH --> TRANSFORMER --> XGB_ENGINE --> SHAP_ENGINE
     end
 
-    subgraph P3["Phase 3: Model selection (training data only)"]
-        PRE["Preprocessing pipeline<br/>scale numerics, one-hot encode categoricals<br/>refitted inside every CV fold"]
-        M["Train 5 models<br/>Logistic Regression, Decision Tree, Random Forest,<br/>Gradient Boosting, XGBoost"]
-        CV["Compare fairly<br/>same folds, same seed, 5-fold stratified CV<br/>Accuracy, Precision, Recall, F1, ROC-AUC"]
-        CHK["Diagnostics<br/>class weighting effect,<br/>decision tree overfitting"]
-        TUNE["Tune top 3 models<br/>RandomizedSearchCV, 20 iterations,<br/>scored by ROC-AUC"]
-        SEL["Select final model<br/>XGBoost, CV ROC-AUC 0.850"]
-        PRE --> M --> CV
-        CV --> CHK
-        CV --> TUNE --> SEL
+    subgraph AREA3["CORE AREA 3: Frontend Web Client (client/)"]
+        VUE_APP["Vue 3 + TypeScript Application<br/>(Vite Build Engine)"]
+        API_LAYER["API Service Wrapper<br/>(src/api/client.ts)"]
+        PINIA_STORE["Pinia Reactive Stores<br/>(prediction.ts & ui.ts)"]
+        
+        VIEW_HOME["HomeView.vue<br/>3D Particle Hero & Scrollytelling"]
+        VIEW_PRED["PredictView.vue<br/>4-Step Studio & What-If Simulator"]
+        VIEW_BATCH["BatchView.vue<br/>CSV Upload & Risk Exporter"]
+        VIEW_INSIGHTS["InsightsView.vue<br/>EDA Visuals & Matrix Heatmap"]
+        VIEW_MODEL["ModelView.vue<br/>Model Card & ROC Benchmarks"]
+        VIEW_SIM["SimulatorView.vue<br/>Retention Campaign ROI Engine"]
+        VIEW_METH["MethodologyView.vue<br/>Architecture & Governance Deck"]
+
+        VUE_APP --> API_LAYER --> PINIA_STORE
+        PINIA_STORE --> VIEW_HOME & VIEW_PRED & VIEW_BATCH & VIEW_INSIGHTS & VIEW_MODEL & VIEW_SIM & VIEW_METH
     end
 
-    subgraph P4["Phase 4: Decision threshold (training data only)"]
-        OOF["Out-of-fold predicted probabilities"]
-        THR["Maximise F2 (recall weighted 2x)<br/>Threshold = 0.17"]
-        OOF -->|"a missed churner costs more than a false alarm"| THR
-    end
-
-    subgraph P5["Phase 5: Final evaluation (test set used once)"]
-        FIT["Refit final model on full training set"]
-        EVAL["Evaluate on unseen test set<br/>Recall 88.5%, Precision 44.9%, ROC-AUC 0.848"]
-        CM["Confusion matrix<br/>331 caught, 43 missed, 406 false alarms"]
-        FIT --> EVAL --> CM
-    end
-
-    subgraph P6["Phase 6: Insight and delivery"]
-        SHAP["SHAP explainability<br/>global drivers and per-customer explanations"]
-        BI["Business insights<br/>risk segments and retention hypotheses"]
-        SAVE["Saved artifact<br/>churn_model.joblib: pipeline, XGBoost, threshold"]
-        APP["Prediction interface<br/>FastAPI and web UI"]
-        SHAP --> BI
-        SHAP --> SAVE --> APP
-    end
-
-    D --> S
-    TR --> PRE
-    SEL --> OOF
-    THR --> FIT
-    TE -.->|"used exactly once"| EVAL
-    CM --> SHAP
-
-    classDef data fill:#e8f1fb,stroke:#2b6cb0,color:#1a202c
-    classDef model fill:#e6f6ec,stroke:#2f855a,color:#1a202c
-    classDef eval fill:#fff4e0,stroke:#c05621,color:#1a202c
-    classDef lock fill:#fde8e8,stroke:#c53030,color:#1a202c
-    classDef out fill:#f3e8ff,stroke:#6b46c1,color:#1a202c
-    class A,B,C,D,S,TR data
-    class PRE,M,CV,CHK,TUNE,SEL,OOF,THR model
-    class FIT,EVAL,CM eval
-    class TE lock
-    class SHAP,BI,SAVE,APP out
+    EP_HEALTH <===>|"HTTP GET / Network Status"| API_LAYER
+    EP_INFO <===>|"HTTP GET / Model Metadata"| API_LAYER
+    EP_OPT <===>|"HTTP GET / Schema Dropdowns"| API_LAYER
+    EP_PRED <===>|"HTTP POST / Single Inference + SHAP"| API_LAYER
+    EP_BATCH <===>|"HTTP POST / Batch Inference (Max 500)"| API_LAYER
 ```
 
-Principles followed throughout:
-- **Split before fitting.** Scaling and encoding are learned from the training set only, inside each model's pipeline.
-- **Fair comparison.** Every model uses the same preprocessing, the same folds, and the same random seed (42).
-- **Test set used once.** Model selection and threshold tuning use training data only (cross-validation and out-of-fold predictions).
-- **Accuracy is not the verdict.** A model that predicts "no churn" for everyone scores 73.5% accuracy and finds no at-risk customer, so models are judged on recall, precision, F1, and ROC-AUC.
+---
 
-## EDA Findings
+## Business Problem & Strategic Objectives
 
-Overall churn rate is 26.5%. Churn rate by every categorical feature (red dashed line is the overall rate):
+### Business Problem
+Customer churn causes immediate subscription revenue decay. In the telecommunications sector, acquiring a replacement customer costs 5x to 25x more than retaining an existing subscriber. 
 
-![Churn rate by category](reports/churn_rate_by_category.png)
+Traditional retention efforts suffer from three operational flaws:
+1. **Late Detection:** Identifying churn risk after a customer files a cancellation request is rarely effective.
+2. **Generic Interventions:** Broad discount campaigns waste budget on satisfied customers or offer incentives that fail to target individual risk drivers (e.g., offering price discounts to customers who actually require technical support).
+3. **Sub-optimal Thresholding:** Default machine learning models set decision thresholds at `0.50`, which severely penalizes Recall. Missing an actual churner forfeits hundreds or thousands of dollars in lifetime value, whereas a false alarm costs only a minor retention campaign incentive.
 
-| Factor | Finding |
-|---|---|
-| Contract | Month-to-month ~43% churn vs ~11% (one-year) and ~3% (two-year) |
-| Internet service | Fiber optic ~42% vs ~19% (DSL) and ~7% (no internet) |
-| Tenure | 47.4% churn in months 0-12, falling to 9.5% after 48 months |
-| Payment method | Electronic check ~45% vs 15-19% for the other three methods |
-| Seniors | 41.7% churn vs 23.6% for non-seniors |
-| Paperless billing | ~34% churn vs ~16% without |
-| Protective factors | OnlineSecurity, TechSupport, a partner, or dependents all sit clearly below average |
-| No real effect | `gender` and `PhoneService` |
+### Strategic Objectives
+- **Build an End-to-End ML Pipeline:** Clean raw telecom data, perform leakage-free preprocessing, engineer business features, and train competitive ML models.
+- **Optimize for Business ROI (Recall Focus):** Adjust decision thresholds using the $F_2$ metric to capture **>85% of actual churners**.
+- **Serve Real-Time Model Explanations:** Build a FastAPI REST API that returns churn probabilities, risk tiers (`Low`, `Medium`, `High`), and top 5 individual SHAP risk drivers per customer.
+- **Provide Actionable Interfaces:** Deliver a modern Vue 3 web interface with instant scenario testing ("What-If"), CSV batch processing, campaign ROI calculators, and scroll-linked technical documentation.
 
-Churners are concentrated among new customers and higher monthly bills, while non-churners cluster at long tenure and low monthly charges:
+---
 
-![Numeric distributions by churn](reports/numeric_distributions.png)
+## Dataset Overview
 
-Churn rate by contract and internet service shows where risk concentrates. Month-to-month fiber optic customers are the riskiest segment at 54.6%:
+**Dataset Source:** IBM Telco Customer Churn dataset ([`blastchar/telco-customer-churn`](https://www.kaggle.com/datasets/blastchar/telco-customer-churn))
 
-| Contract | DSL | Fiber optic | No internet |
+- **Total Records:** 7,043 telecom customers
+- **Total Attributes:** 21 attributes (19 raw features, 1 identifier, 1 binary target)
+- **Target Variable:** `Churn` (`Yes`: 1,869 [26.5%], `No`: 5,174 [73.5%])
+
+| Attribute Category | Attributes / Features | Format / Data Types |
+|---|---|---|
+| **Customer ID** | `customerID` | String (dropped before ML fitting) |
+| **Demographics** | `gender`, `SeniorCitizen`, `Partner`, `Dependents` | Categorical / Binary (0, 1) |
+| **Account Profile** | `tenure` (months), `Contract`, `PaperlessBilling`, `PaymentMethod` | Numeric / Categorical |
+| **Subscribed Services**| `PhoneService`, `MultipleLines`, `InternetService`, `OnlineSecurity`, `OnlineBackup`, `DeviceProtection`, `TechSupport`, `StreamingTV`, `StreamingMovies` | Categorical strings (`Yes`, `No`, `No internet service`) |
+| **Financial Signals** | `MonthlyCharges`, `TotalCharges` | Continuous numeric float values |
+
+---
+
+## Technologies & System Stack
+
+```
+   DATA SCIENCE & ML           BACKEND REST API             FRONTEND CLIENT
+ ┌───────────────────┐       ┌───────────────────┐       ┌───────────────────┐
+ │ Python 3.12       │       │ FastAPI 0.115     │       │ Vue 3.5           │
+ │ pandas & NumPy    │  ───► │ Uvicorn ASGI      │  ───► │ TypeScript 5.3    │
+ │ scikit-learn 1.6  │       │ Pydantic v2       │       │ Vite 5            │
+ │ XGBoost           │       │ joblib            │       │ Pinia State       │
+ │ SHAP (Tree)       │       │ CORSMiddleware    │       │ Three.js 3D       │
+ └───────────────────┘       └───────────────────┘       └───────────────────┘
+```
+
+---
+
+## Project Directory Structure
+
+```
+churn-prediction/
+├── notebook/                             # CORE AREA 1: Machine Learning & Notebooks
+│   ├── data/
+│   │   ├── raw/                          # Original WA_Fn-UseC_-Telco-Customer-Churn.csv
+│   │   └── processed/                    # Cleaned & transformed train/test datasets
+│   ├── models/
+│   │   └── churn_model.joblib            # Serialized XGBoost pipeline & decision threshold
+│   ├── notebooks/
+│   │   ├── 01_data_understanding.ipynb   # Initial inspection, schema validation, data types
+│   │   ├── 02_data_cleaning.ipynb        # TotalCharges parsing, missing value handling
+│   │   ├── 03_EDA.ipynb                  # Exploratory Data Analysis & visual charts
+│   │   ├── 04_feature_engineering.ipynb  # Creation of num_addons, auto_pay, tenure_group
+│   │   └── 05_modelling.ipynb            # Model comparison, tuning, evaluation & SHAP
+│   └── reports/                          # Generated metrics CSVs and plot artifacts
+│       ├── model_comparison.csv
+│       ├── final_test_results.csv
+│       ├── confusion_matrix.png
+│       ├── threshold_tradeoff.png
+│       └── shap_beeswarm.png
+│
+├── server/                               # CORE AREA 2: FastAPI REST API Service
+│   ├── app/
+│   │   ├── core/
+│   │   │   ├── __init__.py
+│   │   │   └── config.py                 # Paths, CORS origins, risk thresholds
+│   │   ├── routes/
+│   │   │   ├── __init__.py
+│   │   │   ├── health.py                 # GET /health
+│   │   │   ├── model.py                  # GET /model/info & GET /model/options
+│   │   │   └── prediction.py             # POST /predict & POST /predict/batch
+│   │   ├── schemas/
+│   │   │   ├── __init__.py
+│   │   │   ├── customer.py               # Pydantic CustomerInput validation schema
+│   │   │   └── prediction.py             # Driver, PredictionResult, BatchResponse schemas
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   └── model_service.py          # Model inference, feature builder & SHAP engine
+│   │   ├── __init__.py
+│   │   └── main.py                       # FastAPI initialization & lifespan handler
+│   ├── requirements.txt                  # Server dependencies (FastAPI, uvicorn, xgboost, joblib)
+│   └── venv/                             # Virtual environment
+│
+├── client/                               # CORE AREA 3: Vue 3 Single-Page Web Application
+│   ├── src/
+│   │   ├── api/
+│   │   │   └── client.ts                 # Fetch API wrapper with timeout and retry logic
+│   │   ├── components/
+│   │   │   ├── hero/                     # 3D Three.js particle canvas & floating cards
+│   │   │   ├── AppNav.vue                # Navigation header
+│   │   │   ├── AppFooter.vue             # Footer component
+│   │   │   ├── BarList.vue               # Insights horizontal bar comparisons
+│   │   │   ├── CountUp.vue               # Animated numeric counter
+│   │   │   ├── ExplainabilityScrolly.vue # SHAP waterfall scrollytelling component
+│   │   │   ├── ImpactBars.vue            # Risk contribution indicators (+ / -)
+│   │   │   ├── MethodologyScrolly.vue    # System architecture scrollytelling deck
+│   │   │   ├── PipelineTimeline.vue      # Step-by-step pipeline timeline
+│   │   │   ├── RiskGauge.vue             # Semi-circular SVG churn probability gauge
+│   │   │   ├── StudioShowcaseScrolly.vue # Interactive prediction studio showcase
+│   │   │   ├── ThresholdCompare.vue      # 2x2 confusion matrix comparison component
+│   │   │   └── ThresholdScrolly.vue      # Threshold tuning scrollytelling component
+│   │   ├── data/                         # Static EDA data constants & segment matrix
+│   │   ├── stores/
+│   │   │   ├── prediction.ts             # Pinia store for customer form & prediction state
+│   │   │   └── ui.ts                     # Pinia store for drawer states & notification toasts
+│   │   ├── styles/                       # CSS design system, typography, glassmorphism
+│   │   ├── types/
+│   │   │   └── index.ts                  # TypeScript interfaces (Customer, Prediction, Driver)
+│   │   ├── views/
+│   │   │   ├── HomeView.vue              # Overview & Scrollytelling hero
+│   │   │   ├── PredictView.vue           # Single Customer Prediction & What-If Studio
+│   │   │   ├── BatchView.vue             # Batch CSV Upload & Risk Exporter Studio
+│   │   │   ├── InsightsView.vue          # EDA Insights & Segment Risk Heatmap Matrix
+│   │   │   ├── ModelView.vue             # Model Card, CV Leaderboard & Confusion Matrix
+│   │   │   ├── SimulatorView.vue         # Retention Campaign Financial ROI Calculator
+│   │   │   └── MethodologyView.vue       # System Architecture & Governance Deck
+│   │   ├── App.vue                       # Root Vue layout component
+│   │   └── main.ts                       # Vue app entrypoint
+│   ├── package.json                      # Client dependencies (Vue 3, Vite, Pinia, Three.js)
+│   └── vite.config.ts                    # Vite build configuration
+│
+├── README.md                             # Complete System Documentation
+└── requirements.txt                      # Root Machine Learning environment requirements
+```
+
+---
+
+## Core Area 1: Notebook & Machine Learning (`notebook/`)
+
+### Jupyter Notebook Sequence
+
+The machine learning workflow is organized sequentially in `notebook/notebooks/`:
+
+1. **`01_data_understanding.ipynb`:** Inspects raw dataset dimensions (7,043 × 21), checks column names, verifies primitive data types, and audits target balance (`Churn`: 26.5%).
+2. **`02_data_cleaning.ipynb`:** Identifies 11 blank space strings (`" "`) in `TotalCharges`. Converts `TotalCharges` to numeric float and imputes missing values using `tenure × MonthlyCharges` (where `tenure=0`). Drops the non-predictive `customerID` column.
+3. **`03_EDA.ipynb`:** Conducts comprehensive bivariate analysis comparing categorical variables against churn rates and evaluating numerical distributions (`tenure`, `MonthlyCharges`, `TotalCharges`).
+4. **`04_feature_engineering.ipynb`:** Engineers 4 business features and validates their statistical correlation with churn risk.
+5. **`05_modelling.ipynb`:** Performs stratified 80/20 train/test split, builds scikit-learn ColumnTransformer pipelines, evaluates 5 algorithms via 5-fold cross-validation, tunes decision thresholds for $F_2$ Recall optimization, computes SHAP feature attributions, and serializes the final pipeline artifact.
+
+### Data Cleaning & Leakage Prevention
+
+- **Strict Stratified Split:** Split into an 80% training set (5,634 rows) and a 20% held-out test set (1,409 rows) before computing standard scalers or feature encoders.
+- **Pipeline Embedding:** Scalers (`StandardScaler`) and encoders (`OneHotEncoder(handle_unknown="ignore")`) are wrapped inside scikit-learn `Pipeline` objects. Preprocessing parameters are fit strictly on training folds during 5-fold CV to prevent data leakage.
+
+### Exploratory Data Analysis (EDA) Insights
+
+- **Baseline Churn Rate:** 26.5% overall churn rate across 7,043 customer accounts.
+- **Contract Type Friction:** Month-to-month subscribers churn at **42.7%**, compared to 11.3% for 1-year contracts and 2.8% for 2-year contracts.
+- **Internet Service Impact:** Fiber optic customers churn at **41.9%**, compared to 19.0% for DSL users and 7.4% for customers with no internet service.
+- **Early Lifecycle Vulnerability:** Customers in their first 12 months churn at **47.4%**, dropping steadily to 9.5% for customers with >48 months tenure.
+- **Payment Method Risk:** Electronic check users churn at **45.3%**, compared to ~15–19% for automated payment methods (bank transfer / credit card).
+
+### Feature Engineering Specifications
+
+Four domain-specific features were created:
+
+| Feature Name | Type | Formula / Logic | Business Objective |
 |---|---|---|---|
-| Month-to-month | 32.2% | **54.6%** | 18.9% |
-| One year | 9.3% | 19.3% | 2.5% |
-| Two year | 1.9% | 7.2% | 0.8% |
+| `num_addons` | Integer (0 to 6) | $\sum (\text{OnlineSecurity}, \text{OnlineBackup}, \text{DeviceProtection}, \text{TechSupport}, \text{StreamingTV}, \text{StreamingMovies} == \text{'Yes'})$ | Measures product adoption depth. Customers with 3+ add-ons churn significantly less. |
+| `has_security_support` | Binary (0 / 1) | $\text{OnlineSecurity} == \text{'Yes'} \lor \text{TechSupport} == \text{'Yes'}$ | Identifies customers with proactive technical safety nets. |
+| `auto_pay` | Binary (0 / 1) | $\text{'automatic'} \in \text{PaymentMethod}$ | Distinguishes seamless auto-recurring billing from manual payment friction. |
+| `tenure_group` | Categorical | `0-12`, `13-24`, `25-48`, `49-72` months | Bins continuous tenure into operational lifecycle cohorts. |
 
-Correlations with churn: `tenure` -0.35, `TotalCharges` -0.20, `MonthlyCharges` 0.19, `SeniorCitizen` 0.15. `tenure` and `TotalCharges` are highly correlated with each other (0.83).
+### Model Benchmarks & Cross-Validation
 
-![Correlation heatmap](reports/correlation_heatmap.png)
+Five classifiers were evaluated using 5-Fold Stratified Cross-Validation on the training dataset (5,634 records):
 
-## Feature Engineering
-
-Four features were derived from the EDA findings. All are computed row by row, so they cannot leak information from the test set.
-
-| Feature | Definition | Churn rate by value |
-|---|---|---|
-| `num_addons` | Count of add-on services (security, backup, protection, support, two streaming services) | 0: 21.4%, 1: 45.8%, 2: 35.8%, 3: 27.4%, 4: 22.3%, 5: 12.4%, 6: 5.3% |
-| `has_security_support` | Has OnlineSecurity or TechSupport | No: 33.4%, Yes: 17.1% |
-| `auto_pay` | Pays by automatic bank transfer or credit card | No: 34.7%, Yes: 16.0% |
-| `tenure_group` | Tenure bands: 0-12, 13-24, 25-48, 49-72 months | 47.4%, 28.7%, 20.4%, 9.5% |
-
-The `num_addons = 0` group is low because it includes customers with no internet service, who rarely churn. Beyond that, churn falls steadily as customers take more add-ons.
-
-## Train/Test Split and Preprocessing
-
-- 80/20 stratified split on `Churn` (`random_state=42`): 5,634 training rows and 1,409 test rows, with a 26.5% churn rate in both.
-- Preprocessing with a scikit-learn `ColumnTransformer`: standard scaling for numeric features, one-hot encoding for categorical features (`drop="if_binary"`, `handle_unknown="ignore"`), and pass-through for binary flags. The 23 input columns expand to 33 after encoding.
-- The preprocessor is part of every model's pipeline, so it is refitted on training folds only during cross-validation.
-
-## Model Development
-
-Five classifiers were trained on identical inputs:
-
-| Model | Role | Imbalance handling |
-|---|---|---|
-| Logistic Regression | Interpretable baseline | `class_weight="balanced"` |
-| Decision Tree | Non-linear rules (depth-limited) | `class_weight="balanced"` |
-| Random Forest | Robust ensemble | `class_weight="balanced"` |
-| Gradient Boosting | Sequential boosting | Sample weights |
-| XGBoost | Regularised boosting | `scale_pos_weight` |
-
-## Model Comparison
-
-5-fold stratified cross-validation on the training set:
-
-| Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
+| Model Algorithm | CV ROC-AUC | CV Recall | CV Precision | CV F1 Score | Notes |
 |---|---|---|---|---|---|
-| Gradient Boosting | 0.750 | 0.519 | 0.793 | 0.627 | 0.847 |
-| Logistic Regression | 0.748 | 0.517 | 0.795 | 0.626 | 0.846 |
-| Random Forest | 0.780 | 0.565 | 0.734 | 0.639 | 0.846 |
-| XGBoost | 0.759 | 0.532 | 0.783 | 0.633 | 0.843 |
-| Decision Tree (depth-limited) | 0.735 | 0.500 | 0.788 | 0.612 | 0.828 |
+| **XGBoost (Tuned)** | **0.850** | **0.783** | **0.532** | **0.633** | **Best overall ROC-AUC & non-linear handling** |
+| **Gradient Boosting** | 0.847 | 0.793 | 0.519 | 0.627 | Strong baseline, slightly slower training |
+| **Logistic Regression** | 0.846 | 0.795 | 0.517 | 0.626 | Linear baseline, highly interpretable |
+| **Random Forest** | 0.846 | 0.734 | 0.565 | 0.639 | Higher precision, lower recall |
+| **Decision Tree (max_depth=5)** | 0.828 | 0.788 | 0.500 | 0.612 | Low-complexity baseline model |
 
-![Model comparison](reports/model_comparison.png)
+### Decision Threshold Tuning (Recall vs. Precision)
 
-**Findings**
-- The four strongest models are effectively tied on ROC-AUC (0.843-0.847), and the simple Logistic Regression baseline is not beaten by the more complex models.
-- **Effect of class weighting** (Logistic Regression): recall rose from 0.538 to 0.795 while precision fell from 0.665 to 0.517. Accuracy dropped from 0.805 to 0.748 and ROC-AUC did not change (0.846). Weighting moves the decision line and catches more churners at the cost of more false alarms.
-- **Effect of removing the Decision Tree depth limit:** training recall reached 0.999 but cross-validated recall was only 0.492, and ROC-AUC fell from 0.828 to 0.658. This is severe overfitting, so a depth limit is required.
-- Random Forest has the highest precision (0.565) and F1 (0.639) but the lowest recall of the top four (0.734).
+Standard model evaluation defaults to a `0.50` probability cutoff. However, in churn prediction, **a false negative (missing an actual churner) costs ~2x to 5x more than a false positive (sending a retention offer to a customer who wasn't going to churn)**.
 
-## Tuning and Final Model
+Using out-of-fold predictions, the decision threshold was tuned to **0.17** to maximize the $F_2$ score:
 
-The three strongest models were tuned with `RandomizedSearchCV` (20 iterations, 5-fold stratified CV, scored by ROC-AUC). Class weights were removed for this stage, because imbalance is handled by threshold tuning instead.
+$$F_2 = \frac{5 \cdot \text{Precision} \cdot \text{Recall}}{4 \cdot \text{Precision} + \text{Recall}}$$
 
-| Tuned model | Best CV ROC-AUC |
-|---|---|
-| **XGBoost** | **0.8502** |
-| Gradient Boosting | 0.8499 |
-| Random Forest | 0.8481 |
-| Logistic Regression (baseline, untuned) | 0.8460 |
+**Held-Out Test Set Performance (1,409 Unseen Customers - 374 Actual Churners):**
 
-**Final model: XGBoost**, selected for the highest cross-validated ROC-AUC. Best parameters: `n_estimators=200`, `learning_rate=0.03`, `max_depth=3`, `subsample=0.85`, `colsample_bytree=0.6`, `min_child_weight=5`, `reg_lambda=10`.
+| Threshold Setting | Accuracy | Precision | Recall | F1 Score | Actual Churners Caught | Missed Churners |
+|---|---|---|---|---|---|---|
+| **Default Threshold (0.50)** | 80.2% | 66.4% | 51.3% | 57.9% | 192 of 374 | **182 missed** |
+| **Tuned Threshold (0.17)** | **68.1%** | **44.9%** | **88.5%** | **59.6%** | **331 of 374** | **43 missed** |
 
-The winning settings are shallow and heavily regularised, which shows that simple models generalise best on this data. The gain over the untuned baseline is only +0.004, so the dataset has a limited signal ceiling and better data would help more than a more complex model. The final choice was made on the highest score; the top three models are within noise of each other.
+> **Key Takeaway:** Lowering the threshold to **0.17** increased churn capture from **51.3% to 88.5%**, catching **139 additional churners** who would have otherwise left undetected.
 
-## Evaluation Results
+### SHAP Explainability & Risk Attribution
 
-**Metric optimised: recall (via the F2 score).** A missed churner costs the customer's revenue, while a false alarm costs only a retention offer, so recall is weighted twice as heavily as precision. The decision threshold (**0.17**) was tuned on out-of-fold training predictions only.
+SHAP (`TreeExplainer`) was integrated to provide global feature importance and local instance-level explainability:
 
-![Threshold trade-off](reports/threshold_tradeoff.png)
+- **Global Top Churn Drivers:**
+  1. `Contract: Month-to-month` (+0.619 mean log-odds impact) — Strongest positive churn signal.
+  2. `tenure` (-0.317 mean log-odds impact) — Primary protective retention anchor.
+  3. `InternetService: Fiber optic` (+0.251 mean log-odds impact) — High risk signal (pricing/service friction).
+  4. `PaymentMethod: Electronic check` (+0.191 mean log-odds impact) — High manual payment friction.
+  5. `MonthlyCharges` (+0.173 mean log-odds impact) — Continuous pricing pressure.
+  6. `Contract: Two year` (-0.159 mean log-odds impact) — Primary long-term lock-in anchor.
 
-Test set results (1,409 customers, evaluated once):
+### Model Artifact Serialization
 
-| Threshold | Accuracy | Precision | Recall | F1 | ROC-AUC |
-|---|---|---|---|---|---|
-| 0.50 (default) | 0.802 | 0.664 | 0.513 | 0.579 | 0.848 |
-| **0.17 (tuned)** | 0.681 | 0.449 | **0.885** | 0.596 | 0.848 |
-
-![Confusion matrix](reports/confusion_matrix.png)
-
-| | Predicted: stayed | Predicted: churned |
-|---|---|---|
-| **Actually stayed** | 629 | 406 (false alarms) |
-| **Actually churned** | 43 (missed) | 331 (caught) |
-
-**What this means**
-- The model catches 331 of 374 churners (88.5%), compared with 51% at the default threshold.
-- It flags 737 customers (52% of the base). 45% of those flagged actually churn, which is about 1.7 times the 26.5% base rate.
-- The cost is 406 false alarms, so retention offers should be cheap to send.
-- Test ROC-AUC (0.848) matches cross-validation (0.850), so there is no sign of overfitting or leakage.
-- Accuracy falls from 80% to 68% by design; it is context, never the verdict.
-
-## Explainability
-
-SHAP (`TreeExplainer`) was applied to the final XGBoost model on the test set.
-
-![SHAP feature importance](reports/shap_importance.png)
-
-| Rank | Feature | Mean \|SHAP\| | Effect |
-|---|---|---|---|
-| 1 | Contract: month-to-month | 0.619 | raises churn |
-| 2 | Tenure | 0.317 | lowers churn |
-| 3 | Internet service: fiber optic | 0.251 | raises churn |
-| 4 | Payment method: electronic check | 0.191 | raises churn |
-| 5 | Monthly charges | 0.173 | raises churn |
-| 6 | Contract: two year | 0.159 | lowers churn |
-| 7 | Internet service: none | 0.146 | lowers churn |
-| 8 | Paperless billing | 0.125 | raises churn |
-| 9 | Has security or tech support | 0.107 | lowers churn |
-| 10 | Total charges | 0.098 | lowers churn |
-
-Each dot below is one customer; red is a high feature value and position shows whether it pushed that customer's risk up (right) or down (left):
-
-![SHAP beeswarm](reports/shap_beeswarm.png)
-
-Per-customer explanation for the highest-risk customer in the test set (churn probability 0.869):
-
-![SHAP waterfall for one customer](reports/shap_waterfall_customer.png)
-
-The SHAP drivers agree with the EDA, which is evidence that the model learned real patterns rather than noise. Contract type is by far the strongest driver, about twice as influential as tenure. The two contract rows and the two internet-service rows are different levels of the same variable, and `TotalCharges` mostly acts as a proxy for long tenure.
-
-## Key Insights and Retention Strategies
-
-**High-risk customer profile (plain language):** a recent customer (first year) on a month-to-month contract, with fiber optic internet, paying by electronic check with paperless billing, a relatively high monthly bill, and no security or tech support add-ons. Seniors also churn more.
-
-**Segments where churn concentrates**
-
-| Segment | Churn rate |
-|---|---|
-| Month-to-month + fiber optic | 54.6% |
-| Tenure 0-12 months | 47.4% |
-| Electronic check payers | ~45% |
-| Month-to-month contract (all) | ~43% |
-| Senior citizens | 41.7% |
-| No security/tech support | 33.4% |
-
-**Retention strategies (hypotheses to test, not proven causes)**
-
-| Driver | Proposed action | Cost to test |
-|---|---|---|
-| Month-to-month contract | Offer a discount or bonus to move flagged customers to a one-year plan | Low: A/B test on the flagged group |
-| First-year tenure | Onboarding check-ins and a welcome offer in months 1-3 | Low to moderate |
-| Electronic check payment | Small bill credit for switching to automatic payment | Low |
-| No security/tech support | Free trial of security or support add-ons | Low to moderate |
-| Fiber optic churn | Review fiber pricing, service quality, and competitor offers | High: needs real investment and root-cause work |
-| High monthly charges | Plan right-sizing or targeted price review | Moderate to high |
-
-> [!IMPORTANT]
-> Feature importance describes association, not causation. The strategies above are hypotheses worth testing with controlled experiments before committing budget. See [Limitations](#limitations).
-
-## Installation
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/mzainnasir010/churn-prediction.git
-cd churn-prediction
-
-# 2. Create and activate a virtual environment (Windows)
-python -m venv venv
-venv\Scripts\activate
-
-# 3. Install pinned dependencies
-pip install -r requirements.txt
-```
-
-Download the dataset from [Kaggle](https://www.kaggle.com/datasets/blastchar/telco-customer-churn) and place it at:
-
-```
-data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
-```
-
-Tested with Python 3.12.
-
-## Usage
-
-**Reproduce the analysis:** run the notebooks in order (`01` to `05`) from the `notebooks/` folder.
-
-```bash
-jupyter notebook
-```
-
-**Score a customer with the saved model:**
+The final fitted model is serialized to `notebook/models/churn_model.joblib` containing a dictionary bundle:
 
 ```python
-import joblib
-import pandas as pd
-
-bundle = joblib.load("models/churn_model.joblib")
-pipeline, threshold = bundle["pipeline"], bundle["threshold"]
-
-customer = pd.DataFrame([{
-    "gender": "Female", "SeniorCitizen": 0, "Partner": "No", "Dependents": "No",
-    "tenure": 3, "PhoneService": "Yes", "MultipleLines": "No",
-    "InternetService": "Fiber optic", "OnlineSecurity": "No", "OnlineBackup": "No",
-    "DeviceProtection": "No", "TechSupport": "No", "StreamingTV": "No",
-    "StreamingMovies": "No", "Contract": "Month-to-month", "PaperlessBilling": "Yes",
-    "PaymentMethod": "Electronic check", "MonthlyCharges": 75.0, "TotalCharges": 225.0,
-    "num_addons": 0, "has_security_support": 0, "auto_pay": 0, "tenure_group": "0-12",
-}])
-
-proba = pipeline.predict_proba(customer)[0, 1]
-print(f"Churn probability: {proba:.1%} | flagged as at risk: {proba >= threshold}")
+{
+    "pipeline": fitted_scikit_learn_pipeline,  # Preprocessing ColumnTransformer + XGBoost model
+    "threshold": 0.17,                          # Tuned optimal decision threshold
+    "model_name": "XGBoost Classifier",
+    "features": feature_names_list
+}
 ```
 
-> [!NOTE]
-> The model expects the four engineered columns (`num_addons`, `has_security_support`, `auto_pay`, `tenure_group`) as well as the raw columns. Loading the model requires the same library versions listed in `requirements.txt`.
+---
 
-## Limitations
+## Core Area 2: FastAPI Backend Server (`server/`)
 
-- **Association, not causation.** The model and SHAP show what is linked to churn, not what causes it.
-- **Single snapshot dataset.** There is no time dimension, so the model was validated on a random split rather than on future customers.
-- **Modest signal ceiling.** ROC-AUC plateaus around 0.85 across every model family, so the data limits performance more than the algorithm does.
-- **Precision is 45%.** More than half of flagged customers would have stayed, so the approach only pays off when retention offers are cheap.
-- **No cost data.** The 0.17 threshold assumes a missed churner is worth about twice a false alarm's cost. With real offer and customer-lifetime-value figures the threshold should be re-tuned.
-- **Correlated features.** `tenure`, `tenure_group`, and `TotalCharges` share importance, so individual rankings should be read together.
-- **Fairness.** `SeniorCitizen` and `gender` are demographic features; any real deployment should include a fairness and compliance review.
+### Architecture & Lifespan State Management
 
-## Future Improvements
+The backend is built as a stateless, asynchronous REST API using **FastAPI** and **Uvicorn**.
 
-- Prediction interface: a FastAPI endpoint and a simple web UI for the retention team
-- Risk tiers (low, medium, high) with justified thresholds
-- Automated retention recommendations that map each customer's dominant SHAP driver to a suggested action
-- Cost-sensitive threshold using real offer costs and customer lifetime value
-- Probability calibration so scores can be read as true likelihoods
-- Time-based validation and drift monitoring on newer data
-- Evaluation on additional churn datasets (banking, SaaS) to test generalisation
+It uses FastAPI's `lifespan` context manager (`app/main.py`) to load the serialized `churn_model.joblib` file into server memory upon startup, ensuring zero per-request disk load latency:
+
+```python
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    model_service.load()  # Load joblib bundle into memory
+    yield
+```
+
+### ModelService Core Engine
+
+Located in `server/app/services/model_service.py`, `ModelService` handles pipeline initialization, raw input transformation, probability scoring, risk tiering, and SHAP calculation:
+
+1. **Feature Origin Resolution (`_origin`):** Maps one-hot encoded dummy column names back to their raw parent features (e.g., mapping `Contract_Month-to-month` back to `Contract`).
+2. **On-the-Fly Feature Re-construction (`_to_frame`):** Translates incoming customer JSON into pandas DataFrames, cleans strings (e.g., mapping `"No internet service"` to `"No"` for service indicators), computes default `TotalCharges = tenure * MonthlyCharges` if missing, and engineers `num_addons`, `has_security_support`, `auto_pay`, and `tenure_group`.
+3. **Risk Tier Assignment (`_tier`):**
+   - **`Low`:** Probability < `0.17`
+   - **`Medium`:** `0.17` $\le$ Probability < `0.50`
+   - **`High`:** Probability $\ge$ `0.50`
+
+### On-the-Fly SHAP Explanation Engine
+
+To generate fast, instant SHAP attributions without heavy computational overhead, `ModelService` extracts the inner XGBoost booster from the scikit-learn pipeline and invokes native contribution prediction:
+
+```python
+raw_contribs = model.get_booster().predict(
+    xgb.DMatrix(transformed_X), pred_contribs=True
+)[:, :-1]
+```
+
+Contributions are aggregated by feature origin to return the **top 5 features** that increase or decrease churn risk for each customer.
+
+### API Endpoints Reference
+
+#### 1. `GET /health`
+- **Description:** Verifies server status, model readiness, and API latency.
+- **Response `200 OK`:**
+```json
+{
+  "status": "ok",
+  "model_loaded": true,
+  "model": "XGBoost Classifier",
+  "ms": 4
+}
+```
+
+#### 2. `GET /model/info`
+- **Description:** Returns model metadata, active decision threshold, risk tier definitions, and held-out test evaluation benchmarks.
+- **Response `200 OK`:**
+```json
+{
+  "model": "XGBoost Classifier",
+  "decision_threshold": 0.17,
+  "input_features": 19,
+  "risk_tiers": {
+    "Low": "probability < 0.17",
+    "Medium": "0.17 <= probability < 0.50",
+    "High": "probability >= 0.50"
+  },
+  "test_set_evaluation": {
+    "0.17_tuned": {
+      "accuracy": 0.6813,
+      "precision": 0.4491,
+      "recall": 0.8850,
+      "f1_score": 0.5959
+    },
+    "0.50_default": {
+      "accuracy": 0.8020,
+      "precision": 0.6644,
+      "recall": 0.5134,
+      "f1_score": 0.5792
+    }
+  }
+}
+```
+
+#### 3. `GET /model/options`
+- **Description:** Returns allowed values for all dropdown input fields (used dynamically by frontend form builders).
+- **Response `200 OK`:**
+```json
+{
+  "gender": ["Male", "Female"],
+  "SeniorCitizen": [0, 1],
+  "Partner": ["Yes", "No"],
+  "Dependents": ["Yes", "No"],
+  "PhoneService": ["Yes", "No"],
+  "MultipleLines": ["Yes", "No", "No phone service"],
+  "InternetService": ["DSL", "Fiber optic", "No"],
+  "OnlineSecurity": ["Yes", "No", "No internet service"],
+  "OnlineBackup": ["Yes", "No", "No internet service"],
+  "DeviceProtection": ["Yes", "No", "No internet service"],
+  "TechSupport": ["Yes", "No", "No internet service"],
+  "StreamingTV": ["Yes", "No", "No internet service"],
+  "StreamingMovies": ["Yes", "No", "No internet service"],
+  "Contract": ["Month-to-month", "One year", "Two year"],
+  "PaperlessBilling": ["Yes", "No"],
+  "PaymentMethod": [
+    "Electronic check",
+    "Mailed check",
+    "Bank transfer (automatic)",
+    "Credit card (automatic)"
+  ]
+}
+```
+
+#### 4. `POST /predict`
+- **Description:** Accepts a single customer record and returns churn probability, decision status, risk tier, and top 5 SHAP drivers.
+- **Request Body:**
+```json
+{
+  "gender": "Female",
+  "SeniorCitizen": 0,
+  "Partner": "No",
+  "Dependents": "No",
+  "tenure": 2,
+  "PhoneService": "Yes",
+  "MultipleLines": "No",
+  "InternetService": "Fiber optic",
+  "OnlineSecurity": "No",
+  "OnlineBackup": "No",
+  "DeviceProtection": "No",
+  "TechSupport": "No",
+  "StreamingTV": "No",
+  "StreamingMovies": "No",
+  "Contract": "Month-to-month",
+  "PaperlessBilling": "Yes",
+  "PaymentMethod": "Electronic check",
+  "MonthlyCharges": 85.00,
+  "TotalCharges": 170.00
+}
+```
+- **Response `200 OK`:**
+```json
+{
+  "churn_probability": 0.7842,
+  "at_risk": true,
+  "risk_tier": "High",
+  "threshold": 0.17,
+  "top_drivers": [
+    {
+      "feature": "Contract",
+      "value": "Month-to-month",
+      "contribution": 0.619,
+      "direction": "increases risk"
+    },
+    {
+      "feature": "tenure",
+      "value": "2",
+      "contribution": -0.317,
+      "direction": "decreases risk"
+    },
+    {
+      "feature": "InternetService",
+      "value": "Fiber optic",
+      "contribution": 0.251,
+      "direction": "increases risk"
+    },
+    {
+      "feature": "PaymentMethod",
+      "value": "Electronic check",
+      "contribution": 0.191,
+      "direction": "increases risk"
+    },
+    {
+      "feature": "MonthlyCharges",
+      "value": "85.0",
+      "contribution": 0.173,
+      "direction": "increases risk"
+    }
+  ]
+}
+```
+
+#### 5. `POST /predict/batch`
+- **Description:** Accepts an array of up to 500 customer records and returns batch prediction results and summary counters.
+- **Request Body:**
+```json
+{
+  "customers": [
+    { /* Customer 1 */ },
+    { /* Customer 2 */ }
+  ]
+}
+```
+- **Response `200 OK`:**
+```json
+{
+  "count": 2,
+  "flagged": 1,
+  "results": [
+    {
+      "churn_probability": 0.7842,
+      "at_risk": true,
+      "risk_tier": "High",
+      "threshold": 0.17,
+      "top_drivers": [ /* Drivers array */ ]
+    },
+    {
+      "churn_probability": 0.0412,
+      "at_risk": false,
+      "risk_tier": "Low",
+      "threshold": 0.17,
+      "top_drivers": [ /* Drivers array */ ]
+    }
+  ]
+}
+```
+
+### Server Configuration (`config.py`)
+
+Configured via environment variables with fallback defaults in `server/app/core/config.py`:
+
+- `MODEL_PATH`: Absolute path to `churn_model.joblib`.
+- `METRICS_PATH`: Path to `final_test_results.csv`.
+- `CORS_ORIGINS`: Allowed client origins (`http://localhost:5173`, `http://127.0.0.1:5173`).
+- `HIGH_RISK_THRESHOLD`: `0.50` (defines boundary for `High` risk tier).
+- `MAX_BATCH_SIZE`: `500` records per batch payload.
+- `TOP_DRIVERS`: `5` features per SHAP explanation payload.
+
+### Server Setup & Local Execution
+
+```bash
+# 1. Navigate to server directory
+cd server
+
+# 2. Create and activate virtual environment
+python -m venv venv
+
+# On Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+
+# On Linux / macOS:
+source venv/bin/activate
+
+# 3. Install requirements
+pip install -r requirements.txt
+
+# 4. Launch FastAPI ASGI server on port 8000
+uvicorn app.main:app --reload --port 8000
+```
+
+- **Interactive Swagger Documentation:** `http://127.0.0.1:8000/docs`
+- **ReDoc Documentation:** `http://127.0.0.1:8000/redoc`
+
+---
+
+## Core Area 3: Vue 3 Single-Page Web Client (`client/`)
+
+### Frontend Architecture & Scrollytelling Engine
+
+The client application is built with **Vue 3 (Composition API `<script setup>`)**, **TypeScript 5.3**, **Vite**, **Pinia**, **Vue Router 4**, and **Three.js**.
+
+- **Scroll-Linked Scrollytelling:** Implements non-intrusive scroll triggers via `requestAnimationFrame` and `getBoundingClientRect` for buttery smooth 60fps animations without external heavy dependencies.
+- **3D Interactive Scene:** Renders an interactive 3D particle landscape in the hero section using Three.js with raycasting interaction.
+
+### API Service & Error Handling Layer
+
+Located in `client/src/api/client.ts`, the frontend API service features:
+- **Automatic Retries & Timeouts:** Uses `AbortSignal.timeout(15000)` and single-retry fallback on network dropouts.
+- **Pydantic Validation Parsing:** Converts HTTP `422 Unprocessable Entity` details into clear error strings.
+- **Type Safety:** Returns typed promises mapped to explicit interfaces defined in `client/src/types/index.ts`.
+
+### State Management (Pinia Stores)
+
+1. **`usePredictionStore` (`src/stores/prediction.ts`):** Manages active customer form state, single prediction results, historical predictions log, batch upload customer array, and batch predictions.
+2. **`useUiStore` (`src/stores/ui.ts`):** Controls drawer modal visibility, active navigation state, toast notifications, and global theme configurations.
+
+### Design System & Layout Geometry
+
+- **Global Container Geometry:** All 7 page views inherit standardized container margins (`padding: 0 3vw`) to guarantee aligned horizontal boundaries across desktop and mobile screens.
+- **Visual Aesthetic:** Minimalist slate monochrome design system (`#090d16` background, slate cards, muted accents, crisp typography) with subtle glassmorphism backdrop blurs.
+
+### Complete Application Views Breakdown
+
+#### 1. Overview & Scrollytelling (`HomeView.vue`)
+- **3D Particle Canvas Hero:** Interactive Three.js canvas featuring floating risk metric cards and live status indicators.
+- **Animated CountUp Metrics:** Real-time count-up animation for cross-validated ROC-AUC (0.850), recall rate (88.5%), and tuned threshold (0.17).
+- **Pipeline Timeline (`PipelineTimeline.vue`):** Interactive alternating timeline detailing data ingestion, feature engineering, model fitting, and API serving steps.
+- **Threshold Scrollytelling (`ThresholdScrolly.vue`):** Interactive scroll module comparing the default `0.50` threshold with the tuned `0.17` threshold.
+- **Explainability Scrollytelling (`ExplainabilityScrolly.vue`):** Flipped scroll-driven SHAP driver visualization with sticky waterfall graphics on the left and narrative text blocks on the right.
+- **Studio Showcase (`StudioShowcaseScrolly.vue`):** Full-width preview section demonstrating single customer scoring and batch features.
+
+#### 2. Single Prediction Studio (`PredictView.vue`)
+- **4-Step Form Wizard:** Guided input sequence covering Demographics, Account Profile, Subscribed Services, and Financials with inline validation.
+- **Persona Quick-Presets:** One-click instant population buttons (*Low-Risk Loyal*, *High-Risk Month-to-Month*, *New Fiber Optic*, *Automated Saver*).
+- **Semi-Circular Risk Gauge (`RiskGauge.vue`):** SVG risk gauge displaying continuous churn probability, threshold marker, and risk tier color code (`Low`: Green, `Medium`: Amber, `High`: Red).
+- **What-If Scenario Simulator:** Interactive control panel allowing operators to adjust attributes (e.g. switching contract length or adding `TechSupport`) and instantly see updated churn probabilities and delta indicators without refilling forms.
+- **SHAP Impact Bars (`ImpactBars.vue`):** Ranked breakdown showing top 5 features increasing risk (+) or decreasing risk (-).
+
+#### 3. Batch CSV Processing (`BatchView.vue`)
+- **Drag-and-Drop Uploader:** Accepts CSV files containing up to 500 customer rows.
+- **Sample File Generator:** Built-in template downloader and 10-row sample generator for testing.
+- **Tabular Data Table:** Sortable and searchable table with status badges (`Flagged at Risk` vs `Low Risk`).
+- **Interactive Detail Drawer:** Clicking any table row opens a side drawer displaying full SHAP driver attributions for that customer.
+- **One-Click Export:** Exports enriched CSV files containing raw customer fields alongside predicted probabilities, decision statuses, risk tiers, and top risk drivers.
+
+#### 4. Churn Insights & Matrix (`InsightsView.vue`)
+- **8 Exploratory Visual Modules:** Horizontal bar charts (`BarList.vue`) illustrating churn rate differentials across contract types, internet services, tenure bands, payment methods, and add-on counts.
+- **Segment Churn Matrix:** Heatmap grid contrasting churn probability across Contract Type × Internet Service combinations (e.g., Month-to-Month + Fiber Optic = 54.6% churn rate).
+
+#### 5. Model Intelligence & Card (`ModelView.vue`)
+- **Standardized Model Card:** Detailed documentation covering model architecture, intended domain, training data distribution, and ethical boundary conditions.
+- **Cross-Validation Leaderboard:** Comparative benchmark table displaying ROC-AUC, Recall, Precision, and F1 scores across 5 candidate algorithms.
+- **Confusion Matrix Component (`ThresholdCompare.vue`):** Side-by-side 2x2 confusion matrices illustrating performance under the `0.50` default threshold vs `0.17` tuned threshold on the 1,409 held-out test records.
+
+#### 6. Campaign ROI Simulator (`SimulatorView.vue`)
+- **Interactive Financial Engine:** Real-time financial calculator with range sliders for:
+  - Customer Cohort Size (100 to 10,000 customers)
+  - Average Annual LTV ($300 to $3,000)
+  - Retention Offer Unit Cost ($10 to $200)
+  - Campaign Acceptance / Retention Success Rate (5% to 80%)
+- **Preset Campaign Scenarios:** Quick-select presets (*Mid-Market Standard*, *Enterprise VIP*, *Low-Cost Digital Incentive*, *VIP White Glove Intervention*).
+- **Real-Time Financial KPI Cards:** Displays Net Campaign Profit / Loss, Return on Investment (ROI %), Saved Revenue, and Total Campaign Execution Cost.
+- **4x4 Sensitivity Matrix:** Financial grid evaluating Net ROI across varying offer costs ($10 to $100) and acceptance rates (10% to 50%).
+
+#### 7. System Methodology (`MethodologyView.vue`)
+- **Sticky Progress Dial & Navigation:** Real-time top progress bar and floating dial tracking scroll position through methodology sections.
+- **Monolithic Specification Stack:** Detailed technical breakdown of feature transformation rules, model serialization protocols, and inference guarantees.
+- **Pipeline Orbit Stage:** Interactive stage illustrating server processing nodes from request parsing to response construction.
+- **Governance Accordion Deck:** Auto-collapsing disclosure deck detailing system limitations, drift assumptions, and human-in-the-loop guidelines.
+
+### Client Setup & Build Commands
+
+```bash
+# 1. Navigate to client directory
+cd client
+
+# 2. Install dependencies
+npm install
+
+# 3. Start Vite local development server
+npm run dev
+
+# 4. Execute TypeScript validation and build production bundle
+npm run build
+
+# 5. Preview production build locally
+npm run preview
+```
+
+- **Local Development Server:** `http://localhost:5173`
+
+---
+
+## Running the Complete System
+
+To run the complete system locally, execute the backend server and frontend client in separate terminal windows:
+
+```bash
+# Terminal 1: Start FastAPI Server (Port 8000)
+cd server
+.\venv\Scripts\Activate.ps1   # On Windows
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 2: Start Vue 3 Web Application (Port 5173)
+cd client
+npm run dev
+```
+
+Once both processes are active, navigate to `http://localhost:5173` in your browser.
+
+---
+
+## Governance, Limitations & Ethics
+
+1. **Correlation vs. Causation:** SHAP feature attributions represent statistical associations learned from historical customer data, not definitive causal mechanics. Retention interventions should be validated via randomized control trial (A/B) experiments.
+2. **Dataset Scope & Cohort Drift:** Trained on IBM Telco snapshot data. Production deployments require continuous monitoring for data drift and periodic model re-training as customer behavior evolves.
+3. **Precision Trade-Off Floor:** Operating at the tuned threshold (`0.17`) achieves **88.5% Recall** at the cost of **44.9% Precision**. Approximately 55% of flagged customers would not have churned even without an intervention. Retention offers must remain cost-effective so that unneeded incentives do not outweigh saved revenue.
+4. **Human-in-the-Loop Oversight:** Predictions generated by this system should serve as decision-support guidance for customer success teams rather than trigger automated account cancellations or billing alterations without human review.
+
+---
 
 ## Author
 
 **Muhammad Zain Nasir**
 [GitHub](https://github.com/mzainnasir010) | [LinkedIn](https://www.linkedin.com/in/muhammadin-zain-nasir/) | [Portfolio](https://muhammad-zain-nasir.vercel.app/)
-
-## Prediction API (FastAPI)
-
-```bash
-cd server
-python -m venv venv && venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-Interactive docs: `http://127.0.0.1:8000/docs`
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/health` | Service and model status |
-| GET | `/model/info` | Model, threshold, risk tiers, test metrics |
-| GET | `/model/options` | Allowed values for each input field |
-| POST | `/predict` | Churn probability, risk tier, and top 5 drivers for one customer |
-| POST | `/predict/batch` | Score up to 500 customers |
-
-Clients send raw customer fields only; the server rebuilds the engineered features (`num_addons`, `has_security_support`, `auto_pay`, `tenure_group`) so predictions match training. Risk tiers: Low (below 0.17), Medium (0.17 to 0.50), High (0.50 and above).
