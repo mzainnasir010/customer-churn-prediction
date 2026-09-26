@@ -1,5 +1,5 @@
 <!--
-  Customer Risk Sphere — the ChurnIQ hero visualization.
+  Customer Risk Sphere — the Retainly hero visualization.
   ~600 customers plotted on a sphere, colored by churn risk. A small
   high-risk cohort is surfaced (pushed outward, glowing, beamed to the
   model core). Hover/tap a customer to see its risk and top driver.

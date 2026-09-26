@@ -14,7 +14,13 @@ watch(() => route.path, () => (open.value = false))
 <template>
   <header class="nav glass">
     <div class="container nav-in">
-      <RouterLink to="/" class="brand"><span class="logo" aria-hidden="true" />ChurnIQ</RouterLink>
+      <RouterLink to="/" class="brand" aria-label="Retainly Home">
+        <img src="/logo.svg" alt="" class="brand-mark" />
+        <div class="brand-text">
+          <span class="brand-name">Retainly</span>
+          <span class="brand-tagline">KNOW. ACT. RETAIN.</span>
+        </div>
+      </RouterLink>
       <nav class="nav-links" aria-label="Main">
         <RouterLink v-for="[to, name] in links" :key="to" :to="to">{{ name }}</RouterLink>
       </nav>

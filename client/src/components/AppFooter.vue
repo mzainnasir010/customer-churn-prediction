@@ -1,9 +1,5 @@
 <script setup lang="ts">
 import { REPO_URL } from '../data/results'
-
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
-}
 </script>
 
 <template>
@@ -15,9 +11,12 @@ function scrollToTop() {
 
         <!-- BRAND & MISSION COLUMN -->
         <div class="footer-brand-col">
-          <RouterLink to="/" class="footer-brand">
-            <div class="footer-logo"></div>
-            <span class="footer-brand-title">ChurnIQ</span>
+          <RouterLink to="/" class="footer-brand" aria-label="Retainly Home">
+            <img src="/logo.svg" alt="" class="footer-brand-mark" />
+            <div class="brand-text">
+              <span class="brand-name">Retainly</span>
+              <span class="brand-tagline">KNOW. ACT. RETAIN.</span>
+            </div>
           </RouterLink>
 
           <p class="footer-desc">
@@ -64,17 +63,7 @@ function scrollToTop() {
       <!-- Bottom Bar: Attribution & Copyright -->
       <div class="footer-bottom">
         <div class="footer-copy">
-          <span>&copy; {{ new Date().getFullYear() }} ChurnIQ. Built by <strong>Muhammad Zain Nasir</strong>.</span>
-        </div>
-
-        <div class="footer-actions">
-          <a :href="REPO_URL" target="_blank" rel="noopener" class="footer-bottom-link">Source Code</a>
-          <span class="footer-sep">•</span>
-          <RouterLink to="/methodology" class="footer-bottom-link">Ethics & Limitations</RouterLink>
-          <span class="footer-sep">•</span>
-          <button class="footer-top-btn" @click="scrollToTop" aria-label="Scroll back to top">
-            Back to top &uarr;
-          </button>
+          <span>&copy; {{ new Date().getFullYear() }} Retainly. Built by <strong>Muhammad Zain Nasir</strong>.</span>
         </div>
       </div>
 
@@ -115,25 +104,30 @@ function scrollToTop() {
   gap: 1rem;
 }
 
-.footer-brand {
+.footer-brand,
+.footer-brand.router-link-active,
+.footer-brand.router-link-exact-active {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
   text-decoration: none;
   color: var(--text);
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
-.footer-logo {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-}
-
-.footer-brand-title {
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+.footer-brand-mark {
+  height: 38px;
+  width: auto;
+  display: block;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  filter: none !important;
 }
 
 .footer-version {
@@ -218,56 +212,17 @@ function scrollToTop() {
 /* ── BOTTOM BAR ── */
 .footer-bottom {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding-top: 1.75rem;
   border-top: 1px solid var(--border);
-  flex-wrap: wrap;
-  gap: 1rem;
-  font-size: 0.84rem;
+  text-align: center;
+  font-size: 0.86rem;
   color: var(--muted);
 }
 
 .footer-copy strong {
   color: var(--text);
-}
-
-.footer-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.footer-bottom-link {
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.footer-bottom-link:hover {
-  color: var(--text);
-}
-
-.footer-sep {
-  color: var(--border);
-}
-
-.footer-top-btn {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-
-.footer-top-btn:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
 }
 
 /* ── RESPONSIVE ── */
@@ -290,8 +245,7 @@ function scrollToTop() {
     grid-column: span 1;
   }
   .footer-bottom {
-    flex-direction: column;
-    align-items: flex-start;
+    text-align: center;
   }
 }
 </style>

@@ -41,10 +41,14 @@ table{width:100%;border-collapse:collapse}td,th{padding:.5rem .6rem;border-botto
 .notice{border:1px dashed var(--med);border-radius:12px;padding:.75rem 1rem;color:var(--text);font-size:.9rem;margin:1rem 0 1.5rem}
 /* nav */
 .nav{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--border)}.nav-in{display:flex;align-items:center;gap:.75rem;height:64px}
-.brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.1rem;text-decoration:none;margin-right:auto}
-.logo{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
-.nav-links{display:flex;gap:.25rem}.nav-links a,.drawer a{padding:.45rem .8rem;border-radius:9px;text-decoration:none;font-size:.9rem;font-weight:500;color:var(--muted);transition:background var(--t),color var(--t)}
-.nav-links a:hover,.drawer a:hover{background:var(--surface2);color:var(--text)}.router-link-exact-active{color:var(--text)!important;background:var(--surface2)}
+.brand,.footer-brand,.brand.router-link-active,.brand.router-link-exact-active,.footer-brand.router-link-active,.footer-brand.router-link-exact-active{display:inline-flex;align-items:center;gap:.65rem;text-decoration:none;margin-right:auto;background:transparent!important;background-color:transparent!important;border:none!important;box-shadow:none!important;outline:none!important;padding:0!important}
+.brand-mark{height:30px;width:auto;display:block}
+.footer-brand-mark{height:36px;width:auto;display:block}
+.brand-text{display:flex;flex-direction:column;line-height:1.05;gap:1px}
+.brand-name{font-size:1.25rem;font-weight:800;letter-spacing:-.025em;color:var(--text)}
+.brand-tagline{font-size:.55rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.nav-links{display:flex;gap:.25rem}.nav-links a,.drawer a{padding:.45rem .8rem;border-radius:99px;text-decoration:none;font-size:.9rem;font-weight:500;color:var(--muted);transition:background var(--t),color var(--t)}
+.nav-links a:hover,.drawer a:hover{background:var(--surface2);color:var(--text)}.nav-links a.router-link-exact-active,.drawer a.router-link-exact-active{color:var(--text)!important;background:var(--surface2)!important}
 .pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.75rem;font-weight:600;padding:.3rem .65rem;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
 .pill i{width:8px;height:8px;border-radius:50%;background:var(--muted)}.pill.online i{background:var(--low);box-shadow:0 0 0 0 var(--low);animation:pulse 2s infinite}.pill.offline i{background:var(--high)}
 @keyframes pulse{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}

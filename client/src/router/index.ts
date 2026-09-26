@@ -14,5 +14,5 @@ const router = createRouter({
   ],
   scrollBehavior: () => ({ top: 0 }),
 })
-router.afterEach((to) => { document.title = `${String(to.meta.title)} | ChurnIQ` })
+router.afterEach((to) => { document.title = `${String(to.meta.title)} | Retainly` })
 export default router

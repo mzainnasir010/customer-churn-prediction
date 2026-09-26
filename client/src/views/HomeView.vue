@@ -21,7 +21,7 @@ function onSceneHover(payload: Hover) { hover.value = payload }
 
 <template>
   <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
-  <section class="hero-shell" aria-label="ChurnIQ hero">
+  <section class="hero-shell" aria-label="Retainly hero">
 
     <!-- ── Background layers ── -->
     <div class="hero-bg" aria-hidden="true">

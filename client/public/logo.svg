@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="189" height="150" viewBox="0 0 189 150" fill="none">
+  <defs>
+    <linearGradient id="navy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#173B8F"/>
+      <stop offset="100%" stop-color="#2858C7"/>
+    </linearGradient>
+
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#20B8E8"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#32D39A"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+
+  <g>
+    <!-- KNOW -->
+    <path
+      d="M22 0H78C89.046 0 98 8.954 98 20V130C98 141.046 89.046 150 78 150H22C9.85 150 0 140.15 0 128V22C0 9.85 9.85 0 22 0Z"
+      fill="url(#navy)"
+    />
+
+    <!-- ACT -->
+    <path
+      d="M82 17H129C140.046 17 149 25.954 149 37V113C149 124.046 140.046 133 129 133H82L99 115V35L82 17Z"
+      fill="url(#cyan)"
+    />
+
+    <!-- RETAIN -->
+    <path
+      d="M133 34H169C180.046 34 189 42.954 189 54V96C189 107.046 180.046 116 169 116H133L150 99V51L133 34Z"
+      fill="url(#green)"
+    />
+  </g>
+</svg>
