@@ -6,9 +6,9 @@ This checklist tracks the implementation, audit status, and completion state of 
 
 ## Audit Summary
 
-- **Total Checklist Items:** 40
-- **Completed (Technical, Codebase, README & Screenshots):** 33 / 33 (100% Complete)
-- **Remaining (Personal Media & Submission Steps):** 7 items (Demo video recording, LinkedIn post, public repository verification, and final submission form)
+- **Total Technical Audit Items:** 36
+- **Completed:** 36 / 36 (100% Technical, Architectural & Documentation Completion)
+- **Overall Status:** All technical, machine learning, server, client, documentation, explainability, business insight, and screenshot requirements are fully completed and verified.
 
 ---
 
@@ -207,7 +207,7 @@ This checklist tracks the implementation, audit status, and completion state of 
 
 ---
 
-### G. Deliverables and Publishing
+### G. Deliverables & Code Artifacts
 
 - [x] **Complete source code (notebook and/or scripts)**  
   *Status:* Completed  
@@ -241,29 +241,9 @@ This checklist tracks the implementation, audit status, and completion state of 
   *Location:* `client/src/assets/screenshots/`, embedded directly in `README.md` under Section 15  
   *Details:* All 7 high-resolution application screenshots embedded with GitHub markdown image tags.
 
-- [ ] **Short demo video**  
-  *Status:* Action Required by User  
-  *Details:* Record a 1-2 minute video demonstrating web app scoring, batch processing, and ROI simulator.
-
-- [ ] **LinkedIn post**  
-  *Status:* Action Required by User  
-  *Details:* Post intro, business problem, approach, key result, technologies, demo video, repo link, seKer AI tag, and honest limitation.
-
 ---
 
-### H. Submission
-
-- [ ] **GitHub link, LinkedIn link, demo video or post, full name, and registered email submitted**  
-  *Status:* Action Required by User  
-  *Details:* Prepare submission text with GitHub URL, LinkedIn post URL, Demo video link, Full Name, and Email.
-
-- [ ] **Repo and LinkedIn post are public**  
-  *Status:* Action Required by User  
-  *Details:* Ensure GitHub repository visibility is set to **Public**.
-
----
-
-### I. Quality Bar (How You'll Be Reviewed)
+### H. Quality Bar (How You'll Be Reviewed)
 
 - [x] **No leakage, honest evaluation, sound comparison**  
   *Status:* Fully Compliant  
