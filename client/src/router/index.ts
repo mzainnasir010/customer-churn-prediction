@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', component: () => import('../views/HomeView.vue'), meta: { title: 'Overview' } },
+    { path: '/', component: HomeView, meta: { title: 'Overview' } },
     { path: '/predict', component: () => import('../views/PredictView.vue'), meta: { title: 'Prediction Studio' } },
         { path: '/batch', component: () => import('../views/BatchView.vue'), meta: { title: 'Batch Prediction' } },
     { path: '/insights', component: () => import('../views/InsightsView.vue'), meta: { title: 'Churn Insights' } },

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { DATASET, FINAL, PIPELINE } from '../data/results'
 import CountUp from '../components/CountUp.vue'
-import HeroScene from '../components/hero/HeroScene.vue'
 import HeroDataCard from '../components/hero/HeroDataCard.vue'
 import HeroTooltip from '../components/hero/HeroTooltip.vue'
-import PipelineTimeline from '../components/PipelineTimeline.vue'
-import ThresholdScrolly from '../components/ThresholdScrolly.vue'
-import ExplainabilityScrolly from '../components/ExplainabilityScrolly.vue'
-import StudioShowcaseScrolly from '../components/StudioShowcaseScrolly.vue'
 
+const HeroScene = defineAsyncComponent(() => import('../components/hero/HeroScene.vue'))
+const PipelineTimeline = defineAsyncComponent(() => import('../components/PipelineTimeline.vue'))
+const ThresholdScrolly = defineAsyncComponent(() => import('../components/ThresholdScrolly.vue'))
+const ExplainabilityScrolly = defineAsyncComponent(() => import('../components/ExplainabilityScrolly.vue'))
+const StudioShowcaseScrolly = defineAsyncComponent(() => import('../components/StudioShowcaseScrolly.vue'))
 
 const show = ref(false)
 onMounted(() => requestAnimationFrame(() => (show.value = true)))
