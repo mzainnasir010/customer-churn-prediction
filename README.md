@@ -16,46 +16,22 @@ An end-to-end, production-grade machine learning application designed to predict
 
 ## Table of Contents
 
-1. [Results at a Glance](#results-at-a-glance)
-2. [Full System Architecture](#full-system-architecture)
-3. [Business Problem & Strategic Objectives](#business-problem--strategic-objectives)
-4. [Dataset Overview](#dataset-overview)
-5. [Technologies & System Stack](#technologies--system-stack)
-6. [Project Directory Structure](#project-directory-structure)
-7. [Core Area 1: Notebook & Machine Learning (`notebook/`)](#core-area-1-notebook--machine-learning-notebook)
-   - [Jupyter Notebook Sequence](#jupyter-notebook-sequence)
-   - [Data Cleaning & Leakage Prevention](#data-cleaning--leakage-prevention)
-   - [Exploratory Data Analysis (EDA) Insights](#exploratory-data-analysis-eda-insights)
-   - [Feature Engineering Specifications](#feature-engineering-specifications)
-   - [Model Benchmarks & Cross-Validation](#model-benchmarks--cross-validation)
-   - [Decision Threshold Tuning (Recall vs. Precision)](#decision-threshold-tuning-recall-vs-precision)
-   - [SHAP Explainability & Risk Attribution](#shap-explainability--risk-attribution)
-   - [Model Artifact Serialization](#model-artifact-serialization)
-8. [Core Area 2: FastAPI Backend Server (`server/`)](#core-area-2-fastapi-backend-server-server)
-   - [Architecture & Lifespan State Management](#architecture--lifespan-state-management)
-   - [ModelService Core Engine](#modelservice-core-engine)
-   - [Feature Re-construction Pipeline](#feature-re-construction-pipeline)
-   - [On-the-Fly SHAP Explanation Engine](#on-the-fly-shap-explanation-engine)
-   - [API Endpoints Reference](#api-endpoints-reference)
-   - [Server Configuration (`config.py`)](#server-configuration-configpy)
-   - [Server Setup & Local Execution](#server-setup--local-execution)
-9. [Core Area 3: Vue 3 Single-Page Web Client (`client/`)](#core-area-3-vue-3-single-page-web-client-client)
-   - [Frontend Architecture & Scrollytelling Engine](#frontend-architecture--scrollytelling-engine)
-   - [API Service & Error Handling Layer](#api-service--error-handling-layer)
-   - [State Management (Pinia Stores)](#state-management-pinia-stores)
-   - [Design System & Layout Geometry](#design-system--layout-geometry)
-   - [Complete Application Views Breakdown](#complete-application-views-breakdown)
-     - [1. Overview & Scrollytelling (`HomeView.vue`)](#1-overview--scrollytelling-homeviewvue)
-     - [2. Single Prediction Studio (`PredictView.vue`)](#2-single-prediction-studio-predictviewvue)
-     - [3. Batch CSV Processing (`BatchView.vue`)](#3-batch-csv-processing-batchviewvue)
-     - [4. Churn Insights & Matrix (`InsightsView.vue`)](#4-churn-insights--matrix-insightsviewvue)
-     - [5. Model Intelligence & Card (`ModelView.vue`)](#5-model-intelligence--card-modelviewvue)
-     - [6. Campaign ROI Simulator (`SimulatorView.vue`)](#6-campaign-roi-simulator-simulatorviewvue)
-     - [7. System Methodology (`MethodologyView.vue`)](#7-system-methodology-methodologyviewvue)
-   - [Client Setup & Build Commands](#client-setup--build-commands)
-10. [Running the Complete System](#running-the-complete-system)
-11. [Governance, Limitations & Ethics](#governance-limitations--ethics)
-12. [Author](#author)
+1. [Title & Executive Summary](#ai-powered-customer-churn-prediction--retention-system)
+2. [Overview](#full-system-architecture)
+3. [Business Problem](#business-problem--strategic-objectives)
+4. [Objectives](#strategic-objectives)
+5. [Dataset](#dataset-overview)
+6. [Technologies](#technologies--system-stack)
+7. [Methodology](#core-area-1-notebook--machine-learning-notebook)
+8. [EDA Findings](#exploratory-data-analysis-eda-insights)
+9. [Model Development](#jupyter-notebook-sequence)
+10. [Model Comparison](#model-benchmarks--cross-validation)
+11. [Evaluation Results](#decision-threshold-tuning-recall-vs-precision)
+12. [Key Insights](#shap-explainability--risk-attribution)
+13. [Installation](#installation--setup)
+14. [Usage](#usage--running-the-complete-system)
+15. [Screenshots & Visual Demos](#screenshots--visual-demos)
+16. [Future Improvements & Governance](#future-improvements--governance)
 
 ---
 
@@ -736,16 +712,68 @@ cd client
 npm run dev
 ```
 
+## Installation & Setup
+
+Please refer to the setup instructions under [Core Area 2: FastAPI Backend Server](#server-setup--local-execution) and [Core Area 3: Vue 3 Web Client](#client-setup--build-commands).
+
+---
+
+## Usage & Running the Complete System
+
+To run the complete system locally, execute the backend server and frontend client in separate terminal windows:
+
+```bash
+# Terminal 1: Start FastAPI Server (Port 8000)
+cd server
+.\venv\Scripts\Activate.ps1   # On Windows
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 2: Start Vue 3 Web Application (Port 5173)
+cd client
+npm run dev
+```
+
 Once both processes are active, navigate to `http://localhost:5173` in your browser.
 
 ---
 
-## Governance, Limitations & Ethics
+## Screenshots & Visual Demos
+
+**Live Application:** [Retainly Web App](https://retainly.zainnasir6921.workers.dev/)
+
+### 1. Home Overview & Scrollytelling
+![Home Overview & Scrollytelling](client/src/assets/screenshots/01_home_hero.png)
+
+### 2. Single Customer Prediction Studio
+![Single Customer Prediction Studio](client/src/assets/screenshots/02_prediction_studio.jpeg)
+
+### 3. Batch CSV Processing Studio
+![Batch CSV Processing Studio](client/src/assets/screenshots/03_batch_processing.jpeg)
+
+### 4. Churn Insights & Segment Risk Heatmap
+![Churn Insights & Segment Matrix](client/src/assets/screenshots/04_churn_insights.jpeg)
+
+### 5. Model Intelligence & Performance Card
+![Model Intelligence Deck](client/src/assets/screenshots/05_model_intelligence.jpeg)
+
+### 6. Retention Campaign ROI Simulator
+![Campaign ROI Simulator](client/src/assets/screenshots/06_roi_simulator.jpeg)
+
+### 7. System Architecture & Methodology Deck
+![System Architecture & Methodology Deck](client/src/assets/screenshots/07_system_methodology.jpeg)
+
+---
+
+## Future Improvements & Governance
 
 1. **Correlation vs. Causation:** SHAP feature attributions represent statistical associations learned from historical customer data, not definitive causal mechanics. Retention interventions should be validated via randomized control trial (A/B) experiments.
 2. **Dataset Scope & Cohort Drift:** Trained on IBM Telco snapshot data. Production deployments require continuous monitoring for data drift and periodic model re-training as customer behavior evolves.
 3. **Precision Trade-Off Floor:** Operating at the tuned threshold (`0.17`) achieves **88.5% Recall** at the cost of **44.9% Precision**. Approximately 55% of flagged customers would not have churned even without an intervention. Retention offers must remain cost-effective so that unneeded incentives do not outweigh saved revenue.
 4. **Human-in-the-Loop Oversight:** Predictions generated by this system should serve as decision-support guidance for customer success teams rather than trigger automated account cancellations or billing alterations without human review.
+5. **Future Roadmap:**
+   - Incorporate time-series survival analysis (e.g. Cox Proportional Hazards) to predict *when* a customer will churn in addition to probability.
+   - Integrate automated A/B testing framework to track real-world retention campaign uplift over time.
+   - Implement real-time WebSockets for streaming batch analytics on multi-thousand row datasets.
 
 ---
 
