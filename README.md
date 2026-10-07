@@ -8,7 +8,7 @@
 ![XGBoost](https://img.shields.io/badge/XGBoost-final%20model-green)
 ![SHAP](https://img.shields.io/badge/SHAP-explainability-purple)
 
-**Live Demo:** [Retainly](https://retainly.zainnasir6921.workers.dev/) ↗
+**Live Demo:** [Retainly](https://retainlyy.vercel.app/) ↗
 
 An end-to-end, production-grade machine learning application designed to predict customer churn risk from telecom customer records, quantify individual risk drivers using SHAP feature attribution, and empower retention teams through a full suite of interactive web applications (Single Customer Prediction Studio, Batch CSV Processing Studio, Retention ROI Campaign Simulator, Churn Insights Heatmaps, Model Intelligence Deck, and Scrollytelling System Architecture).
 
