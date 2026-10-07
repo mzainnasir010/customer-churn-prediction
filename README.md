@@ -739,7 +739,7 @@ Once both processes are active, navigate to `http://localhost:5173` in your brow
 
 ## Screenshots & Visual Demos
 
-**Live Application:** [Retainly Web App](https://retainly.zainnasir6921.workers.dev/)
+**Live Application:** [Retainly Web App](https://retainlyy.vercel.app/)
 
 ### 1. Home Overview & Scrollytelling
 ![Home Overview & Scrollytelling](client/src/assets/screenshots/01_home_hero.png)
